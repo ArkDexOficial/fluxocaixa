@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fluxo de Caixa | Gestão Pessoal</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -35,7 +35,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            padding: 40px 20px 0 20px;
+            padding: 40px 20px;
             overflow-x: hidden;
             width: 100%;
         }
@@ -60,13 +60,13 @@
         .nav-btn.active { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
         .nav-btn:hover:not(.active) { background: rgba(255,255,255,0.05); color: #fff; }
 
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--border); width: 100%; }
         .section-title { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .month-selector { background: var(--card-bg); padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        #monthLabel { font-size: 13px; font-weight: 700; color: var(--primary); min-width: 130px; text-align: center; text-transform: capitalize; }
+        #monthLabel { font-size: 13px; font-weight: 700; color: var(--primary); min-width: 110px; text-align: center; text-transform: capitalize; }
 
-        .content-area { display: none; flex-direction: column; gap: 20px; }
+        .content-area { display: none; flex-direction: column; gap: 20px; width: 100%; }
         .content-area.active { display: flex; }
 
         .card { background: var(--card-bg); padding: 24px; border-radius: 20px; border: 1px solid var(--border); width: 100%; }
@@ -108,7 +108,6 @@
         .actions { display: flex; gap: 8px; flex-shrink: 0; }
         .btn-action { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.5); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         
-        /* RECUPERANDO EFEITOS DE HOVER NOS BOTÕES */
         .btn-action:hover.edit { color: var(--warning); border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
         .btn-action:hover.del { color: var(--danger); border-color: var(--danger); background: rgba(244, 63, 94, 0.1); }
 
@@ -125,10 +124,12 @@
         
         @media (max-width: 768px) { 
             body { padding: 20px 10px; }
-            .dashboard { grid-template-columns: 1fr; } 
-            .sidebar { position: relative; top: 0; margin-bottom: 10px; } 
+            .dashboard { grid-template-columns: 1fr; width: 100%; } 
+            .sidebar { position: relative; top: 0; margin-bottom: 10px; width: 100%; } 
             .form-grid { grid-template-columns: 1fr !important; }
             .form-grid div, .full { grid-column: span 1 !important; }
+            .item-info b { font-size: 12px; }
+            .price { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -184,7 +185,7 @@
                     <button class="btn-main full" id="btnGasto" onclick="saveGasto()">lançar no fluxo</button>
                 </div>
             </div>
-            <div id="listaGastos"></div>
+            <div id="listaGastos" style="width: 100%;"></div>
         </main>
 
         <main id="tab-graficos" class="content-area">
@@ -342,7 +343,7 @@
                         <div class="meta-row"><span style="color: var(--primary)">${g.cat}</span></div>
                         ${g.obs ? `<p style="color: var(--accent)">Ob: ${g.obs}</p>` : ''}
                     </div>
-                    <div style="display:flex; align-items:center; gap:15px">
+                    <div style="display:flex; align-items:center; gap:12px">
                         <span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
                         <div class="actions">
                             <button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
