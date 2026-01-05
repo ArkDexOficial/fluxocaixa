@@ -27,398 +27,84 @@
             --warning: #f59e0b;
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        html, body { 
-            width: 100%;
-            overflow-x: hidden;
-            background-color: var(--bg); 
-            color: var(--text-main); 
-        }
+        html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-main); }
+        body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
 
-        body { 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px;
-        }
+        /* TELAS */
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; width: 100%; }
+        .login-card { background: var(--card-bg); padding: 40px; border-radius: 28px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; }
 
-        /* --- TELAS --- */
-        #auth-screen { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 80vh; 
-            width: 100%; 
-        }
+        #app-screen { display: none; width: 100%; max-width: 900px; }
+        .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 24px; width: 100%; padding-bottom: 60px; }
+
+        .sidebar { background: var(--sidebar-bg); padding: 24px; border-radius: 24px; border: 1px solid var(--border); height: fit-content; position: sticky; top: 20px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--primary); font-size: 1.3rem; margin-bottom: 25px; letter-spacing: -0.5px; }
         
-        .login-card { 
-            background: var(--card-bg); 
-            padding: 40px; 
-            border-radius: 28px; 
-            border: 1px solid var(--border); 
-            width: 100%; 
-            max-width: 400px; 
-            text-align: center; 
-        }
+        .balance-card { background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%); padding: 20px; border-radius: 16px; border: 1px solid rgba(56, 189, 248, 0.2); margin-bottom: 20px; }
+        .balance-card span { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-card h2 { font-size: 1.6rem; font-weight: 800; margin-top: 5px; color: #fff; }
 
-        #app-screen { 
-            display: none; 
-            width: 100%; 
-            max-width: 900px; 
-        }
+        .nav-btn { width: 100%; background: none; border: 1px solid transparent; color: var(--text-dim); padding: 14px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; margin-bottom: 8px; transition: 0.3s; }
+        .nav-btn.active { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
+        .nav-btn:hover:not(.active) { background: rgba(255,255,255,0.05); color: #fff; }
 
-        /* --- LAYOUT DASHBOARD --- */
-        .dashboard { 
-            display: grid; 
-            grid-template-columns: 280px 1fr; 
-            gap: 24px; 
-            width: 100%; 
-            padding-bottom: 60px; 
-        }
-
-        .sidebar { 
-            background: var(--sidebar-bg); 
-            padding: 24px; 
-            border-radius: 24px; 
-            border: 1px solid var(--border); 
-            height: fit-content; 
-            position: sticky; 
-            top: 20px; 
-        }
-
-        .logo { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-weight: 800; 
-            color: var(--primary); 
-            font-size: 1.3rem; 
-            margin-bottom: 25px; 
-            letter-spacing: -0.5px; 
-        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--border); width: 100%; }
+        .section-title { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .balance-card { 
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%); 
-            padding: 20px; 
-            border-radius: 16px; 
-            border: 1px solid rgba(56, 189, 248, 0.2); 
-            margin-bottom: 20px; 
-        }
-        
-        .balance-card span { 
-            font-size: 10px; 
-            font-weight: 800; 
-            color: var(--primary); 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-        }
-        
-        .balance-card h2 { 
-            font-size: 1.6rem; 
-            font-weight: 800; 
-            margin-top: 5px; 
-            color: #fff; 
-        }
+        .month-selector { background: var(--card-bg); padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        #monthLabel { font-size: 12px; font-weight: 700; color: var(--primary); min-width: 110px; text-align: center; text-transform: capitalize; }
 
-        /* --- NAVEGAÇÃO --- */
-        .nav-btn {
-            width: 100%; 
-            background: none; 
-            border: 1px solid transparent; 
-            color: var(--text-dim);
-            padding: 14px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            font-size: 14px; 
-            font-weight: 600; 
-            margin-bottom: 8px; 
-            transition: 0.3s;
-        }
-        
-        .nav-btn.active { 
-            background: var(--primary); 
-            color: #000; 
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); 
-        }
-        
-        .nav-btn:hover:not(.active) { 
-            background: rgba(255,255,255,0.05); 
-            color: #fff; 
-        }
+        .content-area { display: none; flex-direction: column; gap: 20px; width: 100%; }
+        .content-area.active { display: flex; }
 
-        /* --- CABEÇALHOS E CARDS --- */
-        .section-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 15px; 
-            padding-bottom: 12px; 
-            border-bottom: 1px solid var(--border); 
-            width: 100%; 
-        }
-
-        .section-title { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-size: 1.1rem; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-        }
-        
-        .month-selector { 
-            background: var(--card-bg); 
-            padding: 6px 14px; 
-            border-radius: 100px; 
-            border: 1px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-
-        #monthLabel { 
-            font-size: 12px; 
-            font-weight: 700; 
-            color: var(--primary); 
-            min-width: 110px; 
-            text-align: center; 
-            text-transform: capitalize; 
-        }
-
-        .content-area { 
-            display: none; 
-            flex-direction: column; 
-            gap: 20px; 
-            width: 100%; 
-        }
-        
-        .content-area.active { 
-            display: flex; 
-        }
-
-        .card { 
-            background: var(--card-bg); 
-            padding: 24px; 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-            width: 100%; 
-        }
-
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            width: 100%; 
-        }
-        
+        .card { background: var(--card-bg); padding: 24px; border-radius: 20px; border: 1px solid var(--border); width: 100%; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
         .full { grid-column: span 2; }
 
-        label { 
-            font-size: 11px; 
-            font-weight: 800; 
-            color: var(--text-dim); 
-            margin-bottom: 5px; 
-            display: block; 
-            text-transform: uppercase; 
-        }
+        label { font-size: 11px; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; display: block; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: #fff; outline: none; font-size: 14px; transition: 0.2s; }
+        input:focus { border-color: var(--primary); }
+        
+        .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-main:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-        input, select, textarea { 
-            width: 100%; 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border); 
-            background: var(--input-bg); 
-            color: #fff; 
-            outline: none; 
-            font-size: 14px; 
-        }
-        
-        .btn-main { 
-            width: 100%; 
-            background: var(--primary); 
-            color: #000; 
-            border: none; 
-            padding: 14px; 
-            border-radius: 12px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            text-transform: uppercase; 
-        }
+        .date-group { margin-top: 25px; width: 100%; }
+        .date-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .date-header .txt-date { font-size: 14px; font-weight: 800; color: var(--primary); }
+        .date-header .txt-weekday { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; background: rgba(45, 212, 191, 0.1); padding: 2px 8px; border-radius: 6px; }
 
-        /* --- LISTAGEM DE ITENS --- */
-        .date-group { 
-            margin-top: 25px; 
-            width: 100%; 
-        }
-        
-        .date-header { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            margin-bottom: 12px; 
-        }
-        
-        .date-header .txt-date { 
-            font-size: 14px; 
-            font-weight: 800; 
-            color: var(--primary); 
-        }
-        
-        .date-header .txt-weekday { 
-            font-size: 10px; 
-            font-weight: 800; 
-            color: var(--accent); 
-            text-transform: uppercase; 
-            background: rgba(45, 212, 191, 0.1); 
-            padding: 2px 8px; 
-            border-radius: 6px; 
-        }
+        .item { background: var(--card-bg); padding: 12px 15px; border-radius: 16px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; width: 100%; }
+        .item-info { flex: 1; min-width: 0; padding-right: 10px; }
+        .item-info b { font-size: 13px; display: block; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-info p { font-size: 10px; color: var(--accent); margin-top: 2px; font-weight: 600; font-style: italic; }
+        .price { font-weight: 800; font-size: 1rem; color: #fff; white-space: nowrap; }
 
-        .item { 
-            background: var(--card-bg); 
-            padding: 12px 15px; 
-            border-radius: 16px; 
-            border: 1px solid var(--border); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 8px; 
-            width: 100%;
-        }
+        .actions { display: flex; gap: 8px; margin-left: 15px; }
+        .btn-action { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.5); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .btn-action:hover.edit { color: var(--warning); border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        .btn-action:hover.del { color: var(--danger); border-color: var(--danger); background: rgba(244, 63, 94, 0.1); }
 
-        .item-info { 
-            flex: 1; 
-            min-width: 0; 
-            padding-right: 10px; 
-        }
-        
-        .item-info b { 
-            font-size: 13px; 
-            display: block; 
-            color: #fff; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-        }
-        
-        .item-info p { 
-            font-size: 10px; 
-            color: var(--accent); 
-            margin-top: 2px; 
-            font-weight: 600; 
-            font-style: italic; 
-        }
-        
-        .price { 
-            font-weight: 800; 
-            font-size: 1rem; 
-            color: #fff; 
-            white-space: nowrap; 
-        }
-
-        .actions { 
-            display: flex; 
-            gap: 8px; 
-            margin-left: 15px; 
-        }
-        
-        .btn-action { 
-            width: 32px; 
-            height: 32px; 
-            border-radius: 10px; 
-            border: 1px solid var(--border); 
-            background: rgba(15, 23, 42, 0.5); 
-            color: var(--text-dim); 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: 0.3s; 
-        }
-        
-        .btn-action:hover.edit { 
-            color: var(--warning); 
-            border-color: var(--warning); 
-            background: rgba(245, 158, 11, 0.1); 
-        }
-        
-        .btn-action:hover.del { 
-            color: var(--danger); 
-            border-color: var(--danger); 
-            background: rgba(244, 63, 94, 0.1); 
-        }
-
-        /* --- RELATÓRIOS --- */
         .chart-row { margin-bottom: 20px; }
         .chart-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
         .chart-bar-bg { background: var(--input-bg); height: 12px; border-radius: 100px; width: 100%; border: 1px solid var(--border); overflow: hidden; }
         .chart-bar-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 100px; transition: width 1s ease-out; }
 
-        /* --- MODAL --- */
-        .modal { 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.85); 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 1000; 
-            backdrop-filter: blur(8px); 
-            padding: 20px;
-        }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); padding: 20px; }
         .modal.active { display: flex; }
-        .modal-box { 
-            background: var(--card-bg); 
-            padding: 32px; 
-            border-radius: 28px; 
-            width: 100%; 
-            max-width: 380px; 
-            border: 1px solid var(--border); 
-            text-align: center; 
-        }
+        .modal-box { background: var(--card-bg); padding: 32px; border-radius: 28px; width: 100%; max-width: 380px; border: 1px solid var(--border); text-align: center; }
 
-        /* --- AJUSTES MOBILE (AQUI ESTÁ A CORREÇÃO) --- */
         @media (max-width: 768px) { 
             body { padding: 15px; }
             .dashboard { display: block; width: 100%; } 
-            .sidebar { 
-                position: relative; 
-                top: 0; 
-                margin-bottom: 20px; 
-                width: 100%; 
-                border-radius: 20px;
-            } 
+            .sidebar { position: relative; top: 0; margin-bottom: 20px; width: 100%; border-radius: 20px; } 
             .content-area { width: 100% !important; }
             .content-area.active { display: flex; }
             .form-grid { grid-template-columns: 1fr; }
             .full { grid-column: span 1; }
-            .section-header { 
-                flex-direction: column; 
-                gap: 15px; 
-                align-items: flex-start; 
-            }
-            .month-selector { 
-                width: 100%; 
-                justify-content: space-between; 
-            }
-            .item-info b { font-size: 12px; }
-            .price { font-size: 0.9rem; }
-            .actions { margin-left: 8px; gap: 5px; }
+            .section-header { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .month-selector { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -427,12 +113,12 @@
 <div id="auth-screen">
     <div class="login-card">
         <div style="color: var(--primary); margin-bottom: 20px;"><i data-lucide="shield-check" size="48"></i></div>
-        <h2 style="margin-bottom: 10px;">Acesso Restrito</h2>
+        <h2 style="margin-bottom: 10px;">Gestão de Caixa</h2>
         <div style="text-align: left;">
-            <label>E-mail</label><input type="email" id="loginEmail" style="margin-bottom: 15px;">
-            <label>Senha</label><input type="password" id="loginPass">
+            <label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" style="margin-bottom: 15px;">
+            <label>Senha</label><input type="password" id="loginPass" placeholder="******">
         </div>
-        <button class="btn-main" onclick="handleAuth()" style="margin-top: 20px;">ENTRAR NO SISTEMA</button>
+        <button class="btn-main" onclick="handleAuth()" style="margin-top: 20px;">ENTRAR</button>
         <p id="authError" style="color: var(--danger); font-size: 12px; margin-top: 15px; font-weight: 700;"></p>
     </div>
 </div>
@@ -442,12 +128,12 @@
         <aside class="sidebar">
             <div class="logo"><i data-lucide="trending-up"></i> FLUXO DE CAIXA</div>
             <div class="balance-card">
-                <span>gasto do mês</span>
+                <span>gasto total no mês</span>
                 <h2 id="totalDisplay">R$ 0,00</h2>
             </div>
             <nav>
                 <button class="nav-btn active" onclick="switchTab('tab-gastos', this)"><i data-lucide="list"></i> LANÇAMENTOS</button>
-                <button class="nav-btn" onclick="switchTab('tab-fixos', this)"><i data-lucide="calendar"></i> FIXOS MENSAIS</button>
+                <button class="nav-btn" onclick="switchTab('tab-fixos', this)"><i data-lucide="calendar"></i> CUSTOS FIXOS</button>
                 <button class="nav-btn" onclick="switchTab('tab-graficos', this)"><i data-lucide="pie-chart"></i> RELATÓRIOS</button>
                 <button class="nav-btn" onclick="switchTab('tab-cats', this)"><i data-lucide="tags"></i> CATEGORIAS</button>
                 <button class="nav-btn" onclick="logout()" style="color: var(--danger); margin-top: 20px;"><i data-lucide="log-out"></i> SAIR</button>
@@ -456,7 +142,7 @@
 
         <main id="tab-gastos" class="content-area active">
             <div class="section-header">
-                <div class="section-title"><i data-lucide="activity"></i> Movimentações</div>
+                <div class="section-title"><i data-lucide="activity"></i> Novo Lançamento</div>
                 <div class="month-selector">
                     <button class="btn-action" style="border:none" onclick="changeMonth(-1)"><i data-lucide="chevron-left" size="16"></i></button>
                     <span id="monthLabel"></span>
@@ -466,43 +152,43 @@
             <div class="card">
                 <input type="hidden" id="editId">
                 <div class="form-grid">
-                    <div class="full"><label>descrição</label><input type="text" id="gDesc" placeholder="Ex: Mercado"></div>
-                    <div><label>valor (r$)</label><input type="number" id="gVal" step="0.01"></div>
-                    <div><label>categoria</label><select id="gCat"></select></div>
-                    <div class="full"><label>data</label><input type="date" id="gDate"></div>
-                    <div class="full"><label>observação (opcional)</label><textarea id="gObs" placeholder="Algum detalhe extra?"></textarea></div>
-                    <button class="btn-main full" id="btnGasto" onclick="saveGasto()">LANÇAR NO FLUXO</button>
+                    <div class="full"><label>o que você comprou?</label><input type="text" id="gDesc" placeholder="Ex: Mercado, Combustível, Jantar..."></div>
+                    <div><label>quanto custou? (r$)</label><input type="number" id="gVal" step="0.01" placeholder="0,00"></div>
+                    <div><label>escolha a categoria</label><select id="gCat"></select></div>
+                    <div class="full"><label>data da compra</label><input type="date" id="gDate"></div>
+                    <div class="full"><label>anotações (opcional)</label><textarea id="gObs" placeholder="Ex: Cartão de crédito, parcelado em 2x..."></textarea></div>
+                    <button class="btn-main full" id="btnGasto" onclick="saveGasto()">SALVAR LANÇAMENTO</button>
                 </div>
             </div>
             <div id="listaGastos" style="width: 100%;"></div>
         </main>
 
         <main id="tab-graficos" class="content-area">
-            <div class="section-header"><div class="section-title" style="color: var(--primary)"><i data-lucide="bar-chart-3"></i> Gastos por Categoria</div></div>
+            <div class="section-header"><div class="section-title" style="color: var(--primary)"><i data-lucide="bar-chart-3"></i> Resumo Mensal</div></div>
             <div class="card" id="chartContainer"></div>
         </main>
 
         <main id="tab-fixos" class="content-area">
-            <div class="section-header"><div class="section-title" style="color: var(--secondary)"><i data-lucide="repeat"></i> Fixos Mensais</div></div>
+            <div class="section-header"><div class="section-title" style="color: var(--secondary)"><i data-lucide="repeat"></i> Contas Fixas Mensais</div></div>
             <div class="card" style="border-style:dashed; border-color: var(--secondary);">
                 <input type="hidden" id="editFixoId">
                 <div class="form-grid">
-                    <div class="full"><label>nome do fixo</label><input type="text" id="fDesc"></div>
-                    <div><label>valor</label><input type="number" id="fVal" step="0.01"></div>
-                    <div><label>categoria</label><select id="fCat"></select></div>
-                    <button class="btn-main full" id="btnFixo" style="background: var(--secondary)" onclick="saveFixo()">SALVAR FIXO</button>
+                    <div class="full"><label>nome da conta fixa</label><input type="text" id="fDesc" placeholder="Ex: Aluguel, Internet, Netflix..."></div>
+                    <div><label>valor estimado (r$)</label><input type="number" id="fVal" step="0.01" placeholder="0,00"></div>
+                    <div><label>categoria da conta</label><select id="fCat"></select></div>
+                    <button class="btn-main full" id="btnFixo" style="background: var(--secondary)" onclick="saveFixo()">SALVAR CONTA FIXA</button>
                 </div>
             </div>
             <div id="listaFixos"></div>
         </main>
 
         <main id="tab-cats" class="content-area">
-            <div class="section-header"><div class="section-title" style="color: var(--accent)"><i data-lucide="layers"></i> Categorias</div></div>
+            <div class="section-header"><div class="section-title" style="color: var(--accent)"><i data-lucide="layers"></i> Gerenciar Categorias</div></div>
             <div class="card">
-                <label>Nova Categoria</label>
+                <label>nome da nova categoria</label>
                 <div style="display:flex; gap:10px">
-                    <input type="text" id="newCatInput" placeholder="Ex: Viagens" style="flex:1">
-                    <button class="btn-main" style="width:100px; background: var(--accent)" onclick="addCat()">ADD</button>
+                    <input type="text" id="newCatInput" placeholder="Ex: Viagens, Pets, Saúde..." style="flex:1">
+                    <button class="btn-main" style="width:130px; background: var(--accent)" onclick="addCat()">ADICIONAR</button>
                 </div>
             </div>
             <div id="catManagerList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px;"></div>
@@ -513,16 +199,15 @@
 <div id="confirmModal" class="modal">
     <div class="modal-box">
         <div style="color: var(--danger); margin-bottom: 15px;"><i data-lucide="alert-triangle" size="48" style="margin: 0 auto;"></i></div>
-        <h3>Deseja excluir?</h3>
+        <h3>Confirmar Exclusão?</h3>
         <div style="display:flex; gap:12px; margin-top:25px">
-            <button class="btn-main" style="background:var(--border); color:#fff" onclick="closeModal()">NÃO</button>
+            <button class="btn-main" style="background:var(--border); color:#fff" onclick="closeModal()">CANCELAR</button>
             <button class="btn-main" style="background:var(--danger); color:#fff" id="confirmDeleteBtn">EXCLUIR</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURAÇÃO FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyAkd0Tjn7yVZpoPTDCGzZ-HdtGzFywnKmw",
         authDomain: "fluxocaixa-ae436.firebaseapp.com",
@@ -542,7 +227,6 @@
     let db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
     let pendingDelete = { id: null, type: null };
 
-    // --- AUTENTICAÇÃO ---
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUser = user;
@@ -562,20 +246,13 @@
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
         const errorDiv = document.getElementById('authError');
-        try { 
-            await auth.signInWithEmailAndPassword(email, pass); 
-        } catch (e) {
-            try { 
-                await auth.createUserWithEmailAndPassword(email, pass); 
-            } catch (err) { 
-                errorDiv.innerText = "ERRO: " + err.message; 
-            }
+        try { await auth.signInWithEmailAndPassword(email, pass); } catch (e) {
+            try { await auth.createUserWithEmailAndPassword(email, pass); } catch (err) { errorDiv.innerText = "ERRO: " + err.message; }
         }
     }
 
     function logout() { auth.signOut(); }
 
-    // --- DADOS ---
     function loadUserData() {
         database.ref('users/' + currentUser.uid).on('value', snapshot => {
             const data = snapshot.val();
@@ -588,9 +265,7 @@
         });
     }
 
-    function sync() { 
-        if(currentUser) database.ref('users/' + currentUser.uid).set(db); 
-    }
+    function sync() { if(currentUser) database.ref('users/' + currentUser.uid).set(db); }
 
     function getWeekday(dateString) {
         const days = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
@@ -598,7 +273,6 @@
         return days[d.getDay()];
     }
 
-    // --- RENDERIZAÇÃO ---
     function render() {
         const monthKey = `${viewDate.getFullYear()}-${viewDate.getMonth()}`;
         document.getElementById('monthLabel').innerText = new Intl.DateTimeFormat('pt-BR', {month:'long', year:'numeric'}).format(viewDate);
@@ -616,7 +290,6 @@
         const totalF = db.fixos.reduce((s, f) => s + parseFloat(f.val), 0);
         document.getElementById('totalDisplay').innerText = `R$ ${(totalG + totalF).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
 
-        // Lista de Gastos
         const containerG = document.getElementById('listaGastos');
         containerG.innerHTML = '';
         const grupos = {};
@@ -642,7 +315,6 @@
             containerG.innerHTML += groupHtml + `</div>`;
         });
 
-        // Lista Fixos
         document.getElementById('listaFixos').innerHTML = db.fixos.map(f => `
             <div class="item">
                 <div class="item-info"><b>${f.desc.toUpperCase()}</b><span style="font-size:9px; color:var(--secondary); font-weight:700">${f.cat}</span></div>
@@ -653,7 +325,6 @@
                 </div>
             </div>`).join('');
 
-        // Lista Categorias
         document.getElementById('catManagerList').innerHTML = db.cats.sort().map(c => `
             <div style="background:var(--card-bg); padding:10px; border-radius:10px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:12px; font-weight:700;">${c}</span>
@@ -669,46 +340,32 @@
         db.cats.forEach(c => totals[c] = 0);
         gastosNoMes.forEach(g => totals[g.cat] += parseFloat(g.val));
         db.fixos.forEach(f => totals[f.cat] += parseFloat(f.val));
-        
         const maxVal = Math.max(...Object.values(totals), 1);
-        document.getElementById('chartContainer').innerHTML = Object.entries(totals)
-            .filter(x => x[1] > 0)
-            .sort((a,b) => b[1] - a[1])
-            .map(([name, val]) => `
+        document.getElementById('chartContainer').innerHTML = Object.entries(totals).filter(x => x[1] > 0).sort((a,b) => b[1] - a[1]).map(([name, val]) => `
                 <div class="chart-row">
                     <div class="chart-label"><span>${name}</span><span>R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span></div>
                     <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: ${(val/maxVal)*100}%"></div></div>
                 </div>`).join('') || '<p style="text-align:center; color:var(--text-dim);">Sem dados no período.</p>';
     }
 
-    // --- AÇÕES ---
     function saveGasto() {
         const id = document.getElementById('editId').value;
         const desc = document.getElementById('gDesc').value;
         const val = document.getElementById('gVal').value;
         if(!desc || !val) return;
-        const data = { 
-            id: id ? parseInt(id) : Date.now(), 
-            desc, val, 
-            cat: document.getElementById('gCat').value, 
-            date: document.getElementById('gDate').value, 
-            obs: document.getElementById('gObs').value 
-        };
+        const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('gCat').value, date: document.getElementById('gDate').value, obs: document.getElementById('gObs').value };
         if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g); else db.gastos.push(data);
         sync(); 
         ['gDesc','gVal','gObs','editId'].forEach(f => document.getElementById(f).value = '');
-        document.getElementById('btnGasto').innerText = "LANÇAR NO FLUXO";
+        document.getElementById('btnGasto').innerText = "SALVAR LANÇAMENTO";
         document.getElementById('btnGasto').style.background = "var(--primary)";
     }
 
     function prepareEditGasto(id) {
         const g = db.gastos.find(x => x.id == id);
-        document.getElementById('editId').value = g.id;
-        document.getElementById('gDesc').value = g.desc;
-        document.getElementById('gVal').value = g.val;
-        document.getElementById('gCat').value = g.cat;
-        document.getElementById('gDate').value = g.date;
-        document.getElementById('gObs').value = g.obs || '';
+        document.getElementById('editId').value = g.id; document.getElementById('gDesc').value = g.desc;
+        document.getElementById('gVal').value = g.val; document.getElementById('gCat').value = g.cat;
+        document.getElementById('gDate').value = g.date; document.getElementById('gObs').value = g.obs || '';
         document.getElementById('btnGasto').innerText = "ATUALIZAR";
         document.getElementById('btnGasto').style.background = "var(--warning)";
         window.scrollTo({top: 0, behavior: 'smooth'});
@@ -723,16 +380,14 @@
         if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f); else db.fixos.push(data);
         sync(); 
         ['fDesc','fVal','editFixoId'].forEach(i => document.getElementById(i).value = '');
-        document.getElementById('btnFixo').innerText = "SALVAR FIXO";
+        document.getElementById('btnFixo').innerText = "SALVAR CONTA FIXA";
     }
 
     function prepareEditFixo(id) {
         const f = db.fixos.find(x => x.id == id);
-        document.getElementById('editFixoId').value = f.id;
-        document.getElementById('fDesc').value = f.desc;
-        document.getElementById('fVal').value = f.val;
-        document.getElementById('fCat').value = f.cat;
-        document.getElementById('btnFixo').innerText = "ATUALIZAR FIXO";
+        document.getElementById('editFixoId').value = f.id; document.getElementById('fDesc').value = f.desc;
+        document.getElementById('fVal').value = f.val; document.getElementById('fCat').value = f.cat;
+        document.getElementById('btnFixo').innerText = "ATUALIZAR CONTA FIXA";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
@@ -741,21 +396,13 @@
         if(v && !db.cats.includes(v)) { db.cats.push(v); sync(); document.getElementById('newCatInput').value = ''; }
     }
 
-    function askDelete(id, type) { 
-        pendingDelete = {id, type}; 
-        document.getElementById('confirmModal').classList.add('active'); 
-    }
-    
-    function closeModal() { 
-        document.getElementById('confirmModal').classList.remove('active'); 
-    }
-    
+    function askDelete(id, type) { pendingDelete = {id, type}; document.getElementById('confirmModal').classList.add('active'); }
+    function closeModal() { document.getElementById('confirmModal').classList.remove('active'); }
     document.getElementById('confirmDeleteBtn').onclick = () => {
         if(pendingDelete.type === 'gasto') db.gastos = db.gastos.filter(x => x.id != pendingDelete.id);
         else if(pendingDelete.type === 'fixo') db.fixos = db.fixos.filter(x => x.id != pendingDelete.id);
         else if(pendingDelete.type === 'cat') db.cats = db.cats.filter(x => x != pendingDelete.id);
-        sync(); 
-        closeModal();
+        sync(); closeModal();
     };
 
     function switchTab(id, btn) {
