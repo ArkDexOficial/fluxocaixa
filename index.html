@@ -36,16 +36,13 @@
             flex-direction: column; 
             align-items: center; 
             padding: 40px 20px 0 20px;
-            /* Ajuste de segurança para não ter barra lateral */
             overflow-x: hidden;
             width: 100%;
         }
 
-        /* TELA DE LOGIN */
         #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; width: 100%; }
         .login-card { background: var(--card-bg); padding: 40px; border-radius: 28px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; }
 
-        /* DASHBOARD (Oculto por padrão) */
         #app-screen { display: none; width: 100%; max-width: 900px; }
         .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 24px; width: 100%; padding-bottom: 60px; }
 
@@ -79,12 +76,9 @@
         label { font-size: 11px; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; display: block; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: #fff; outline: none; font-size: 14px; transition: 0.3s; }
         
-        .field-success { border-color: var(--primary) !important; box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
-
         .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
         .btn-main:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        /* ESTILO DA TIMELINE - Ajustado para não vazar */
         .date-group { margin-top: 25px; width: 100%; }
         .date-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-left: 5px; }
         .date-header .txt-date { font-size: 14px; font-weight: 800; color: var(--primary); }
@@ -100,22 +94,19 @@
             align-items: center; 
             margin-bottom: 8px; 
             transition: 0.2s; 
-            width: 100%; /* Garante que respeite a largura do pai */
+            width: 100%;
         }
         .item:hover { border-color: var(--primary); transform: translateX(5px); }
 
         .item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
         .item-info b { font-size: 13px; display: block; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .item-info p { font-size: 10px; color: var(--text-dim); margin-top: 2px; font-style: italic; }
-        .item-info .meta-row { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: var(--secondary); text-transform: uppercase; flex-wrap: wrap; }
-        .item-info .dot { width: 3px; height: 3px; background: var(--text-dim); border-radius: 50%; }
+        .meta-row { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; flex-wrap: wrap; }
         
         .price { font-weight: 800; font-size: 1rem; color: #fff; white-space: nowrap; margin-left: 10px; }
 
         .actions { display: flex; gap: 8px; flex-shrink: 0; }
         .btn-action { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.5); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .btn-action:hover.edit { color: var(--warning); border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-        .btn-action:hover.del { color: var(--danger); border-color: var(--danger); background: rgba(244, 63, 94, 0.1); }
 
         .chart-row { margin-bottom: 20px; }
         .chart-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
@@ -128,23 +119,14 @@
 
         footer { width: 100%; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-top: 1px solid var(--border); padding: 25px 0; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         
-        /* ÚNICO LOCAL QUE ALTEREI: MEDIA QUERY PARA CELULAR */
         @media (max-width: 768px) { 
             body { padding: 20px 10px; }
             .dashboard { grid-template-columns: 1fr; } 
             .sidebar { position: relative; top: 0; margin-bottom: 10px; } 
-
-            /* Corrige o formulário que estava largo demais */
             .form-grid { grid-template-columns: 1fr !important; }
             .form-grid div, .full { grid-column: span 1 !important; }
-
-            /* Ajusta cabeçalho da timeline */
-            .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .month-selector { width: 100%; justify-content: space-between; }
-            #monthLabel { min-width: 0; flex: 1; text-align: center; font-size: 11px; }
         }
     </style>
-
 </head>
 <body>
 
@@ -152,12 +134,9 @@
     <div class="login-card">
         <div style="color: var(--primary); margin-bottom: 20px;"><i data-lucide="shield-check" size="48"></i></div>
         <h2 style="margin-bottom: 10px;">Acesso Restrito</h2>
-        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">Faça login para gerenciar seus dados</p>
         <div style="text-align: left;">
-            <label>E-mail</label>
-            <input type="email" id="loginEmail" placeholder="seu@email.com" style="margin-bottom: 15px;">
-            <label>Senha</label>
-            <input type="password" id="loginPass" placeholder="••••••••">
+            <label>E-mail</label><input type="email" id="loginEmail" style="margin-bottom: 15px;">
+            <label>Senha</label><input type="password" id="loginPass">
         </div>
         <button class="btn-main" onclick="handleAuth()" style="margin-top: 20px;">ENTRAR / CADASTRAR</button>
         <p id="authError" style="color: var(--danger); font-size: 12px; margin-top: 15px; font-weight: 700;"></p>
@@ -190,7 +169,6 @@
                     <button class="btn-action" style="border:none" onclick="changeMonth(1)"><i data-lucide="chevron-right" size="16"></i></button>
                 </div>
             </div>
-
             <div class="card">
                 <input type="hidden" id="editId">
                 <div class="form-grid">
@@ -257,7 +235,6 @@
 </footer>
 
 <script>
-    // --- Configuração Firebase ---
     const firebaseConfig = {
         apiKey: "AIzaSyAkd0Tjn7yVZpoPTDCGzZ-HdtGzFywnKmw",
         authDomain: "fluxocaixa-ae436.firebaseapp.com",
@@ -277,7 +254,6 @@
     let pendingDelete = { id: null, type: null };
     let db = { gastos: [], fixos: [], cats: ["MERCADO", "LAZER", "SAÚDE"] };
 
-    // MONITOR DE LOGIN
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUser = user;
@@ -297,12 +273,10 @@
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
         const errorDiv = document.getElementById('authError');
-        try {
-            await auth.signInWithEmailAndPassword(email, pass);
-        } catch (e) {
+        try { await auth.signInWithEmailAndPassword(email, pass); } catch (e) {
             if (e.code === 'auth/user-not-found') {
                 try { await auth.createUserWithEmailAndPassword(email, pass); } 
-                catch (err) { errorDiv.innerText = "ERRO AO CADASTRAR: " + err.message; }
+                catch (err) { errorDiv.innerText = "ERRO: " + err.message; }
             } else { errorDiv.innerText = "ERRO: " + e.message; }
         }
     }
@@ -321,9 +295,7 @@
         });
     }
 
-    function sync() {
-        if(currentUser) database.ref('users/' + currentUser.uid).set(db);
-    }
+    function sync() { if(currentUser) database.ref('users/' + currentUser.uid).set(db); }
 
     function getWeekday(dateString) {
         const days = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
@@ -354,52 +326,45 @@
         });
 
         const grupos = {};
-        filtrados.forEach(g => {
-            if(!grupos[g.date]) grupos[g.date] = [];
-            grupos[g.date].push(g);
-        });
+        filtrados.forEach(g => { if(!grupos[g.date]) grupos[g.date] = []; grupos[g.date].push(g); });
 
         Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
             let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span></div>`;
             grupos[date].forEach(g => {
-                grupos[date].forEach(g => {
-                    groupHtml += `
-                    <div class="item">
-                        <div class="item-info">
-                            <b>${g.desc.toUpperCase()}</b>
-                            <div class="meta-row">
-                                <span style="color: var(--primary)">${g.cat}</span>
-                            </div>
-                            ${g.obs ? `<p>Ob: ${g.obs}</p>` : ''}
+                groupHtml += `
+                <div class="item">
+                    <div class="item-info">
+                        <b>${g.desc.toUpperCase()}</b>
+                        <div class="meta-row"><span style="color: var(--primary)">${g.cat}</span></div>
+                        ${g.obs ? `<p>Ob: ${g.obs}</p>` : ''}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:15px">
+                        <span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                        <div class="actions">
+                            <button class="btn-action" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
+                            <button class="btn-action" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
                         </div>
-                        <div style="display:flex; align-items:center; gap:15px">
-                            <span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
-                            <div class="actions">
-                                <button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
-                                <button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
-                            </div>
-                        </div>
-                    </div>`;
-                });
+                    </div>
+                </div>`;
+            });
             containerG.innerHTML += groupHtml + `</div>`;
         });
 
         document.getElementById('listaFixos').innerHTML = db.fixos.map(f => `
-        <div class="item">
-            <div class="item-info">
-                <b>${f.desc.toUpperCase()}</b>
-                <div class="meta-row">
-                    <span style="color: var(--secondary)">${f.cat}</span>
+            <div class="item">
+                <div class="item-info">
+                    <b>${f.desc.toUpperCase()}</b>
+                    <div class="meta-row"><span style="color: var(--secondary)">${f.cat}</span></div>
                 </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:15px">
-                <span class="price">R$ ${parseFloat(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
-                <div class="actions">
-                    <button class="btn-action edit" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button>
-                    <button class="btn-action del" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button>
+                <div style="display:flex; align-items:center; gap:15px">
+                    <span class="price">R$ ${parseFloat(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                    <div class="actions">
+                        <button class="btn-action" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button>
+                        <button class="btn-action" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button>
+                    </div>
                 </div>
-            </div>
-        </div>`).join('');
+            </div>`).join('');
+            
         document.getElementById('catManagerList').innerHTML = db.cats.sort().map(c => `<div style="background:var(--input-bg); padding:12px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; font-weight:700;">${c}</span><button class="btn-action del" onclick="askDelete('${c}', 'cat')"><i data-lucide="x" size="14"></i></button></div>`).join('');
         
         renderChart();
@@ -424,20 +389,13 @@
         }).join('') || '<p style="text-align:center; color:var(--text-dim);">Sem dados.</p>';
     }
 
-    function addCat() {
-        const val = document.getElementById('newCatInput').value.trim().toUpperCase();
-        if(val && !db.cats.includes(val)) { db.cats.push(val); sync(); document.getElementById('newCatInput').value = ''; }
-    }
-
     function saveGasto() {
         const id = document.getElementById('editId').value;
         const val = parseFloat(document.getElementById('gVal').value);
         if(!document.getElementById('gDesc').value || isNaN(val)) return;
         const data = { id: id ? parseInt(id) : Date.now(), desc: document.getElementById('gDesc').value, val, cat: document.getElementById('gCat').value, date: document.getElementById('gDate').value, obs: document.getElementById('gObs').value.trim() };
-        if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g);
-        else db.gastos.push(data);
-        sync();
-        ['gObs', 'gVal', 'gDesc'].forEach(f => document.getElementById(f).value = '');
+        if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g); else db.gastos.push(data);
+        sync(); ['gObs', 'gVal', 'gDesc'].forEach(f => document.getElementById(f).value = '');
         document.getElementById('editId').value = '';
         document.getElementById('btnGasto').innerText = "lançar no fluxo";
         document.getElementById('btnGasto').style.background = "var(--primary)";
@@ -445,15 +403,10 @@
 
     function prepareEditGasto(id) {
         const g = db.gastos.find(x => x.id == id);
-        document.getElementById('editId').value = g.id;
-        document.getElementById('gDesc').value = g.desc;
-        document.getElementById('gVal').value = g.val;
-        document.getElementById('gCat').value = g.cat;
-        document.getElementById('gDate').value = g.date;
-        document.getElementById('gObs').value = g.obs || '';
-        const btn = document.getElementById('btnGasto');
-        btn.innerText = "atualizar lançamento";
-        btn.style.background = "var(--warning)";
+        document.getElementById('editId').value = g.id; document.getElementById('gDesc').value = g.desc;
+        document.getElementById('gVal').value = g.val; document.getElementById('gCat').value = g.cat;
+        document.getElementById('gDate').value = g.date; document.getElementById('gObs').value = g.obs || '';
+        const btn = document.getElementById('btnGasto'); btn.innerText = "atualizar lançamento"; btn.style.background = "var(--warning)";
         window.scrollTo({top:0, behavior:'smooth'});
     }
 
@@ -462,28 +415,25 @@
         const val = parseFloat(document.getElementById('fVal').value);
         if(!document.getElementById('fDesc').value || isNaN(val)) return;
         const data = { id: id ? parseInt(id) : Date.now(), desc: document.getElementById('fDesc').value, val, cat: document.getElementById('fCat').value };
-        if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f);
-        else db.fixos.push(data);
-        sync();
-        ['fDesc', 'fVal', 'editFixoId'].forEach(i => document.getElementById(i).value = '');
-        document.getElementById('btnFixo').innerText = "salvar fixo";
-        document.getElementById('btnFixo').style.background = "var(--secondary)";
+        if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f); else db.fixos.push(data);
+        sync(); ['fDesc', 'fVal', 'editFixoId'].forEach(i => document.getElementById(i).value = '');
+        document.getElementById('btnFixo').innerText = "salvar fixo"; document.getElementById('btnFixo').style.background = "var(--secondary)";
     }
 
     function prepareEditFixo(id) {
         const f = db.fixos.find(x => x.id == id);
-        document.getElementById('editFixoId').value = f.id;
-        document.getElementById('fDesc').value = f.desc;
-        document.getElementById('fVal').value = f.val;
-        document.getElementById('fCat').value = f.cat;
-        const btn = document.getElementById('btnFixo');
-        btn.innerText = "atualizar fixo";
-        btn.style.background = "var(--warning)";
+        document.getElementById('editFixoId').value = f.id; document.getElementById('fDesc').value = f.desc;
+        document.getElementById('fVal').value = f.val; document.getElementById('fCat').value = f.cat;
+        const btn = document.getElementById('btnFixo'); btn.innerText = "atualizar fixo"; btn.style.background = "var(--warning)";
+    }
+
+    function addCat() {
+        const val = document.getElementById('newCatInput').value.trim().toUpperCase();
+        if(val && !db.cats.includes(val)) { db.cats.push(val); sync(); document.getElementById('newCatInput').value = ''; }
     }
 
     function askDelete(id, type) { pendingDelete = {id, type}; document.getElementById('confirmModal').classList.add('active'); }
     function closeModal() { document.getElementById('confirmModal').classList.remove('active'); }
-
     document.getElementById('confirmDeleteBtn').onclick = () => {
         if(pendingDelete.type==='gasto') db.gastos = db.gastos.filter(g => g.id != pendingDelete.id);
         else if(pendingDelete.type==='fixo') db.fixos = db.fixos.filter(f => f.id != pendingDelete.id);
@@ -503,10 +453,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
