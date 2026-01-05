@@ -362,12 +362,44 @@
         Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
             let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span></div>`;
             grupos[date].forEach(g => {
-                groupHtml += `<div class="item"><div class="item-info"><b>${g.desc.toUpperCase()}</b><small>${g.cat}</small>${g.obs ? `<p>${g.obs}</p>` : ''}</div><div style="display:flex; align-items:center; gap:15px"><span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span><div class="actions"><button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button><button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button></div></div></div>`;
-            });
+                grupos[date].forEach(g => {
+                    groupHtml += `
+                    <div class="item">
+                        <div class="item-info">
+                            <b>${g.desc.toUpperCase()}</b>
+                            <div class="meta-row">
+                                <span style="color: var(--primary)">${g.cat}</span>
+                            </div>
+                            ${g.obs ? `<p>Ob: ${g.obs}</p>` : ''}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px">
+                            <span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                            <div class="actions">
+                                <button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
+                                <button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+                });
             containerG.innerHTML += groupHtml + `</div>`;
         });
 
-        document.getElementById('listaFixos').innerHTML = db.fixos.map(f => `<div class="item"><div class="item-info"><b>${f.desc.toUpperCase()}</b><small>${f.cat}</small></div><div style="display:flex; align-items:center; gap:15px"><span class="price">R$ ${parseFloat(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span><div class="actions"><button class="btn-action edit" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button><button class="btn-action del" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button></div></div></div>`).join('');
+        document.getElementById('listaFixos').innerHTML = db.fixos.map(f => `
+        <div class="item">
+            <div class="item-info">
+                <b>${f.desc.toUpperCase()}</b>
+                <div class="meta-row">
+                    <span style="color: var(--secondary)">${f.cat}</span>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px">
+                <span class="price">R$ ${parseFloat(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                <div class="actions">
+                    <button class="btn-action edit" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button>
+                    <button class="btn-action del" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button>
+                </div>
+            </div>
+        </div>`).join('');
         document.getElementById('catManagerList').innerHTML = db.cats.sort().map(c => `<div style="background:var(--input-bg); padding:12px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; font-weight:700;">${c}</span><button class="btn-action del" onclick="askDelete('${c}', 'cat')"><i data-lucide="x" size="14"></i></button></div>`).join('');
         
         renderChart();
@@ -471,6 +503,7 @@
 </script>
 </body>
 </html>
+
 
 
 
