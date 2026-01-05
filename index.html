@@ -106,70 +106,60 @@
         @media (max-width: 768px) { .dashboard { grid-template-columns: 1fr; } .sidebar { position: relative; top: 0; } }
 
         /* AJUSTES PARA CELULAR */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px; /* Reduz o respiro lateral no celular */
-            }
+        /* Ajuste para itens em blocos menores e organizados */
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1; /* Garante que o texto ocupe o espaço disponível sem empurrar os botões */
+            min-width: 0; /* Essencial para que o texto não force a largura do container */
+        }
         
-            .dashboard {
-                grid-template-columns: 1fr; /* Empilha a barra lateral e o conteúdo */
-                gap: 15px;
-            }
+        .item-info b {
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            white-space: nowrap; /* Evita que nomes longos quebrem o layout */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Coloca "..." se o nome for muito grande */
+        }
         
-            .sidebar {
-                position: relative;
-                top: 0;
-                padding: 15px;
-                border-radius: 16px;
-            }
+        .item-info .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            flex-wrap: wrap; /* Se a tela for muito pequena, a data pula para baixo da categoria */
+        }
         
-            .logo {
-                font-size: 1.1rem;
-                margin-bottom: 15px;
-            }
+        .item-info .dot {
+            width: 4px;
+            height: 4px;
+            background: var(--text-dim);
+            border-radius: 50%;
+            flex-shrink: 0; /* Impede que a bolinha seja esmagada */
+        }
         
-            .nav-btn {
-                padding: 10px;
-                font-size: 13px;
-            }
+        .item-info p {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 2px;
+            font-style: italic;
+            opacity: 0.8;
+            line-height: 1.2;
+        }
         
-            /* Faz com que os campos de input ocupem a linha toda no celular */
-            .form-grid {
-                grid-template-columns: 1fr; 
-            }
-            
-            .form-grid div {
-                grid-column: span 1;
-            }
-        
-            .full {
-                grid-column: span 1;
-            }
-        
-            /* Ajusta o tamanho da fonte dos itens para ganhar espaço */
-            .item {
-                padding: 12px 15px;
-            }
-        
-            .price {
-                font-size: 1rem;
-            }
-        
-            .item-info b {
-                font-size: 12px;
-            }
-        
-            /* Modal mais largo no celular */
-            .modal-box {
-                width: 90%;
-                padding: 20px;
-            }
-        
-            .month-selector #monthLabel {
-                min-width: 100px;
-                font-size: 11px;
-            }
-        }     
+        /* Ajuste extra no container do item para travar a largura */
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 100%; /* Não deixa o bloco ser maior que o celular */
+            box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+            padding: 12px 15px;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -497,5 +487,6 @@
 </script>
 </body>
 </html>
+
 
 
