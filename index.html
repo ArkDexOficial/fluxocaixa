@@ -9,6 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -29,7 +30,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px 0 20px; }
 
-        .dashboard { width: 100%; max-width: 900px; display: grid; grid-template-columns: 280px 1fr; gap: 24px; flex-grow: 1; padding-bottom: 60px; }
+        /* TELA DE LOGIN */
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; width: 100%; }
+        .login-card { background: var(--card-bg); padding: 40px; border-radius: 28px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; }
+
+        /* DASHBOARD (Oculto por padrão) */
+        #app-screen { display: none; width: 100%; max-width: 900px; }
+        .dashboard { display: grid; grid-template-columns: 280px 1fr; gap: 24px; width: 100%; padding-bottom: 60px; }
 
         .sidebar { background: var(--sidebar-bg); padding: 24px; border-radius: 24px; border: 1px solid var(--border); height: fit-content; position: sticky; top: 40px; }
         .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--primary); font-size: 1.3rem; margin-bottom: 25px; letter-spacing: -0.5px; }
@@ -66,6 +73,7 @@
         .btn-main { width: 100%; background: var(--primary); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
         .btn-main:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
+        /* ESTILO DA TIMELINE */
         .date-group { margin-top: 25px; }
         .date-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-left: 5px; }
         .date-header .txt-date { font-size: 14px; font-weight: 800; color: var(--primary); }
@@ -100,75 +108,94 @@
 </head>
 <body>
 
-<div class="dashboard">
-    <aside class="sidebar">
-        <div class="logo"><i data-lucide="trending-up"></i> FLUXO DE CAIXA</div>
-        <div class="balance-card">
-            <span>gasto do mês</span>
-            <h2 id="totalDisplay">R$ 0,00</h2>
+<div id="auth-screen">
+    <div class="login-card">
+        <div style="color: var(--primary); margin-bottom: 20px;"><i data-lucide="shield-check" size="48"></i></div>
+        <h2 style="margin-bottom: 10px;">Acesso Restrito</h2>
+        <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">Faça login para gerenciar seus dados</p>
+        <div style="text-align: left;">
+            <label>E-mail</label>
+            <input type="email" id="loginEmail" placeholder="seu@email.com" style="margin-bottom: 15px;">
+            <label>Senha</label>
+            <input type="password" id="loginPass" placeholder="••••••••">
         </div>
-        <nav>
-            <button class="nav-btn active" onclick="switchTab('tab-gastos', this)"><i data-lucide="list"></i> LANÇAMENTOS</button>
-            <button class="nav-btn" onclick="switchTab('tab-fixos', this)"><i data-lucide="calendar"></i> FIXOS MENSAIS</button>
-            <button class="nav-btn" onclick="switchTab('tab-graficos', this)"><i data-lucide="pie-chart"></i> RELATÓRIOS</button>
-            <button class="nav-btn" onclick="switchTab('tab-cats', this)"><i data-lucide="tags"></i> CATEGORIAS</button>
-        </nav>
-    </aside>
+        <button class="btn-main" onclick="handleAuth()" style="margin-top: 20px;">ENTRAR / CADASTRAR</button>
+        <p id="authError" style="color: var(--danger); font-size: 12px; margin-top: 15px; font-weight: 700;"></p>
+    </div>
+</div>
 
-    <main id="tab-gastos" class="content-area active">
-        <div class="section-header">
-            <div class="section-title"><i data-lucide="activity"></i> Movimentações</div>
-            <div class="month-selector">
-                <button class="btn-action" style="border:none" onclick="changeMonth(-1)"><i data-lucide="chevron-left" size="16"></i></button>
-                <span id="monthLabel"></span>
-                <button class="btn-action" style="border:none" onclick="changeMonth(1)"><i data-lucide="chevron-right" size="16"></i></button>
+<div id="app-screen">
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo"><i data-lucide="trending-up"></i> FLUXO DE CAIXA</div>
+            <div class="balance-card">
+                <span>gasto do mês</span>
+                <h2 id="totalDisplay">R$ 0,00</h2>
             </div>
-        </div>
+            <nav>
+                <button class="nav-btn active" onclick="switchTab('tab-gastos', this)"><i data-lucide="list"></i> LANÇAMENTOS</button>
+                <button class="nav-btn" onclick="switchTab('tab-fixos', this)"><i data-lucide="calendar"></i> FIXOS MENSAIS</button>
+                <button class="nav-btn" onclick="switchTab('tab-graficos', this)"><i data-lucide="pie-chart"></i> RELATÓRIOS</button>
+                <button class="nav-btn" onclick="switchTab('tab-cats', this)"><i data-lucide="tags"></i> CATEGORIAS</button>
+                <button class="nav-btn" onclick="logout()" style="color: var(--danger); margin-top: 20px;"><i data-lucide="log-out"></i> SAIR</button>
+            </nav>
+        </aside>
 
-        <div class="card">
-            <input type="hidden" id="editId">
-            <div class="form-grid">
-                <div class="full"><label>descrição</label><input type="text" id="gDesc" placeholder="o que você pagou?"></div>
-                <div><label>valor (r$)</label><input type="number" id="gVal" placeholder="0.00"></div>
-                <div><label>categoria</label><select id="gCat"></select></div>
-                <div class="full"><label>data</label><input type="date" id="gDate"></div>
-                <div class="full"><label>observação (opcional)</label><textarea id="gObs" placeholder="algum detalhe extra?"></textarea></div>
-                <button class="btn-main full" id="btnGasto" onclick="saveGasto()">lançar no fluxo</button>
+        <main id="tab-gastos" class="content-area active">
+            <div class="section-header">
+                <div class="section-title"><i data-lucide="activity"></i> Movimentações</div>
+                <div class="month-selector">
+                    <button class="btn-action" style="border:none" onclick="changeMonth(-1)"><i data-lucide="chevron-left" size="16"></i></button>
+                    <span id="monthLabel"></span>
+                    <button class="btn-action" style="border:none" onclick="changeMonth(1)"><i data-lucide="chevron-right" size="16"></i></button>
+                </div>
             </div>
-        </div>
-        <div id="listaGastos"></div>
-    </main>
 
-    <main id="tab-graficos" class="content-area">
-        <div class="section-header"><div class="section-title" style="color: var(--primary)"><i data-lucide="bar-chart-3"></i> Gastos por Categoria</div></div>
-        <div class="card" id="chartContainer"></div>
-    </main>
-
-    <main id="tab-fixos" class="content-area">
-        <div class="section-header"><div class="section-title" style="color: var(--secondary)"><i data-lucide="repeat"></i> Fixos todo mês</div></div>
-        <div class="card" style="border-style:dashed; border-color: var(--secondary); background: rgba(167, 139, 250, 0.02);">
-            <input type="hidden" id="editFixoId">
-            <div class="form-grid">
-                <div class="full"><label>nome do fixo</label><input type="text" id="fDesc" placeholder="ex: internet"></div>
-                <div><label>valor</label><input type="number" id="fVal" placeholder="0.00"></div>
-                <div><label>categoria</label><select id="fCat"></select></div>
-                <button class="btn-main full" id="btnFixo" style="background: var(--secondary)" onclick="saveFixo()">salvar fixo</button>
+            <div class="card">
+                <input type="hidden" id="editId">
+                <div class="form-grid">
+                    <div class="full"><label>descrição</label><input type="text" id="gDesc" placeholder="o que você pagou?"></div>
+                    <div><label>valor (r$)</label><input type="number" id="gVal" placeholder="0.00"></div>
+                    <div><label>categoria</label><select id="gCat"></select></div>
+                    <div class="full"><label>data</label><input type="date" id="gDate"></div>
+                    <div class="full"><label>observação (opcional)</label><textarea id="gObs" placeholder="algum detalhe extra?"></textarea></div>
+                    <button class="btn-main full" id="btnGasto" onclick="saveGasto()">lançar no fluxo</button>
+                </div>
             </div>
-        </div>
-        <div id="listaFixos"></div>
-    </main>
+            <div id="listaGastos"></div>
+        </main>
 
-    <main id="tab-cats" class="content-area">
-        <div class="section-header"><div class="section-title" style="color: var(--accent)"><i data-lucide="layers"></i> Gerenciar categorias</div></div>
-        <div class="card">
-            <label>nome da nova categoria</label>
-            <div style="display:flex; gap:10px">
-                <input type="text" id="newCatInput" placeholder="ex: investimentos" style="flex:1">
-                <button class="btn-main" style="width:120px; background: var(--accent)" onclick="addCat()">adicionar</button>
+        <main id="tab-graficos" class="content-area">
+            <div class="section-header"><div class="section-title" style="color: var(--primary)"><i data-lucide="bar-chart-3"></i> Gastos por Categoria</div></div>
+            <div class="card" id="chartContainer"></div>
+        </main>
+
+        <main id="tab-fixos" class="content-area">
+            <div class="section-header"><div class="section-title" style="color: var(--secondary)"><i data-lucide="repeat"></i> Fixos todo mês</div></div>
+            <div class="card" style="border-style:dashed; border-color: var(--secondary); background: rgba(167, 139, 250, 0.02);">
+                <input type="hidden" id="editFixoId">
+                <div class="form-grid">
+                    <div class="full"><label>nome do fixo</label><input type="text" id="fDesc" placeholder="ex: internet"></div>
+                    <div><label>valor</label><input type="number" id="fVal" placeholder="0.00"></div>
+                    <div><label>categoria</label><select id="fCat"></select></div>
+                    <button class="btn-main full" id="btnFixo" style="background: var(--secondary)" onclick="saveFixo()">salvar fixo</button>
+                </div>
             </div>
-        </div>
-        <div id="catManagerList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px;"></div>
-    </main>
+            <div id="listaFixos"></div>
+        </main>
+
+        <main id="tab-cats" class="content-area">
+            <div class="section-header"><div class="section-title" style="color: var(--accent)"><i data-lucide="layers"></i> Gerenciar categorias</div></div>
+            <div class="card">
+                <label>nome da nova categoria</label>
+                <div style="display:flex; gap:10px">
+                    <input type="text" id="newCatInput" placeholder="ex: investimentos" style="flex:1">
+                    <button class="btn-main" style="width:120px; background: var(--accent)" onclick="addCat()">adicionar</button>
+                </div>
+            </div>
+            <div id="catManagerList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px;"></div>
+        </main>
+    </div>
 </div>
 
 <div id="confirmModal" class="modal">
@@ -185,35 +212,65 @@
 <footer>
     <div style="display:flex; align-items:center; gap:20px; color:var(--text-dim); font-size:11px; font-weight:700; text-transform:uppercase;">
         <span><i data-lucide="shield-check" size="14"></i> FIREBASE SYNC ATIVO</span>
-        <span>V3.5 PREMIUM</span>
+        <span>V3.8 PREMIUM</span>
     </div>
 </footer>
 
 <script>
     // --- Configuração Firebase ---
     const firebaseConfig = {
-      apiKey: "AIzaSyAkd0Tjn7yVZpoPTDCGzZ-HdtGzFywnKmw",
-      authDomain: "fluxocaixa-ae436.firebaseapp.com",
-      databaseURL: "https://fluxocaixa-ae436-default-rtdb.firebaseio.com",
-      projectId: "fluxocaixa-ae436",
-      storageBucket: "fluxocaixa-ae436.firebasestorage.app",
-      messagingSenderId: "116209202150",
-      appId: "1:116209202150:web:26da007eb215ea2f925c27"
+        apiKey: "AIzaSyAkd0Tjn7yVZpoPTDCGzZ-HdtGzFywnKmw",
+        authDomain: "fluxocaixa-ae436.firebaseapp.com",
+        databaseURL: "https://fluxocaixa-ae436-default-rtdb.firebaseio.com",
+        projectId: "fluxocaixa-ae436",
+        storageBucket: "fluxocaixa-ae436.firebasestorage.app",
+        messagingSenderId: "116209202150",
+        appId: "1:116209202150:web:26da007eb215ea2f925c27"
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const database = firebase.database();
 
+    let currentUser = null;
     let viewDate = new Date();
     let pendingDelete = { id: null, type: null };
     let db = { gastos: [], fixos: [], cats: ["GERAL", "CONTAS", "LAZER", "SAÚDE"] };
 
-    function init() {
+    // MONITOR DE LOGIN
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+            document.getElementById('gDate').value = new Date().toISOString().split('T')[0];
+            loadUserData();
+        } else {
+            currentUser = null;
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('app-screen').style.display = 'none';
+        }
         lucide.createIcons();
-        document.getElementById('gDate').value = new Date().toISOString().split('T')[0];
-        
-        // Sincronização em tempo real
-        database.ref('/').on('value', (snapshot) => {
+    });
+
+    async function handleAuth() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        const errorDiv = document.getElementById('authError');
+        try {
+            await auth.signInWithEmailAndPassword(email, pass);
+        } catch (e) {
+            if (e.code === 'auth/user-not-found') {
+                try { await auth.createUserWithEmailAndPassword(email, pass); } 
+                catch (err) { errorDiv.innerText = "ERRO AO CADASTRAR: " + err.message; }
+            } else { errorDiv.innerText = "ERRO: " + e.message; }
+        }
+    }
+
+    function logout() { auth.signOut(); }
+
+    function loadUserData() {
+        database.ref('users/' + currentUser.uid).on('value', snapshot => {
             const data = snapshot.val();
             if (data) {
                 db.gastos = data.gastos ? Object.values(data.gastos) : [];
@@ -225,7 +282,7 @@
     }
 
     function sync() {
-        database.ref('/').set(db);
+        if(currentUser) database.ref('users/' + currentUser.uid).set(db);
     }
 
     function getWeekday(dateString) {
@@ -245,11 +302,10 @@
         let totalG = db.gastos.filter(g => {
             const d = new Date(g.date + "T00:00:00");
             return `${d.getFullYear()}-${d.getMonth()}` === monthKey;
-        }).reduce((s, g) => s + g.val, 0);
-        let totalF = db.fixos.reduce((s, f) => s + f.val, 0);
+        }).reduce((s, g) => s + parseFloat(g.val), 0);
+        let totalF = db.fixos.reduce((s, f) => s + parseFloat(f.val), 0);
         document.getElementById('totalDisplay').innerText = `R$ ${(totalG + totalF).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
 
-        // LISTA GASTOS AGRUPADA
         const containerG = document.getElementById('listaGastos');
         containerG.innerHTML = '';
         const filtrados = db.gastos.filter(g => {
@@ -264,33 +320,14 @@
         });
 
         Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
-            let groupHtml = `<div class="date-group">
-                <div class="date-header">
-                    <span class="txt-date">${date.split('-').reverse().join('/')}</span>
-                    <span class="txt-weekday">${getWeekday(date)}</span>
-                </div>`;
+            let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span></div>`;
             grupos[date].forEach(g => {
-                groupHtml += `<div class="item">
-                    <div class="item-info">
-                        <b>${g.desc.toUpperCase()}</b>
-                        <small>${g.cat}</small>
-                        ${g.obs ? `<p>${g.obs}</p>` : ''}
-                    </div>
-                    <div style="display:flex; align-items:center; gap:15px">
-                        <span class="price">R$ ${g.val.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
-                        <div class="actions">
-                            <button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
-                            <button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
-                        </div>
-                    </div>
-                </div>`;
+                groupHtml += `<div class="item"><div class="item-info"><b>${g.desc.toUpperCase()}</b><small>${g.cat}</small>${g.obs ? `<p>${g.obs}</p>` : ''}</div><div style="display:flex; align-items:center; gap:15px"><span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span><div class="actions"><button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button><button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button></div></div></div>`;
             });
             containerG.innerHTML += groupHtml + `</div>`;
         });
 
-        const containerF = document.getElementById('listaFixos');
-        containerF.innerHTML = db.fixos.map(f => `<div class="item"><div class="item-info"><b>${f.desc.toUpperCase()}</b><small>${f.cat}</small></div><div style="display:flex; align-items:center; gap:15px"><span class="price">R$ ${f.val.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span><div class="actions"><button class="btn-action edit" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button><button class="btn-action del" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button></div></div></div>`).join('');
-
+        document.getElementById('listaFixos').innerHTML = db.fixos.map(f => `<div class="item"><div class="item-info"><b>${f.desc.toUpperCase()}</b><small>${f.cat}</small></div><div style="display:flex; align-items:center; gap:15px"><span class="price">R$ ${parseFloat(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span><div class="actions"><button class="btn-action edit" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button><button class="btn-action del" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button></div></div></div>`).join('');
         document.getElementById('catManagerList').innerHTML = db.cats.sort().map(c => `<div style="background:var(--input-bg); padding:12px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; font-weight:700;">${c}</span><button class="btn-action del" onclick="askDelete('${c}', 'cat')"><i data-lucide="x" size="14"></i></button></div>`).join('');
         
         renderChart();
@@ -305,8 +342,8 @@
         db.gastos.filter(g => {
             const d = new Date(g.date + "T00:00:00");
             return `${d.getFullYear()}-${d.getMonth()}` === monthKey;
-        }).forEach(g => { if(catTotals[g.cat] !== undefined) catTotals[g.cat] += g.val; });
-        db.fixos.forEach(f => { if(catTotals[f.cat] !== undefined) catTotals[f.cat] += f.val; });
+        }).forEach(g => { if(catTotals[g.cat] !== undefined) catTotals[g.cat] += parseFloat(g.val); });
+        db.fixos.forEach(f => { if(catTotals[f.cat] !== undefined) catTotals[f.cat] += parseFloat(f.val); });
 
         const maxVal = Math.max(...Object.values(catTotals), 1);
         container.innerHTML = Object.entries(catTotals).sort((a,b) => b[1] - a[1]).map(([name, val]) => {
@@ -328,8 +365,7 @@
         if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g);
         else db.gastos.push(data);
         sync();
-        const fields = ['gObs', 'gVal', 'gDesc'];
-        fields.forEach(f => document.getElementById(f).value = '');
+        ['gObs', 'gVal', 'gDesc'].forEach(f => document.getElementById(f).value = '');
         document.getElementById('editId').value = '';
         document.getElementById('btnGasto').innerText = "lançar no fluxo";
         document.getElementById('btnGasto').style.background = "var(--primary)";
@@ -392,7 +428,6 @@
     }
 
     function changeMonth(s) { viewDate.setMonth(viewDate.getMonth()+s); render(); }
-    init();
 </script>
 </body>
 </html>
