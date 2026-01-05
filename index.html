@@ -106,59 +106,81 @@
         @media (max-width: 768px) { .dashboard { grid-template-columns: 1fr; } .sidebar { position: relative; top: 0; } }
 
         /* AJUSTES PARA CELULAR */
-        /* Ajuste para itens em blocos menores e organizados */
-        .item-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            flex: 1; /* Garante que o texto ocupe o espaço disponível sem empurrar os botões */
-            min-width: 0; /* Essencial para que o texto não force a largura do container */
-        }
-        
-        .item-info b {
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            white-space: nowrap; /* Evita que nomes longos quebrem o layout */
-            overflow: hidden;
-            text-overflow: ellipsis; /* Coloca "..." se o nome for muito grande */
-        }
-        
-        .item-info .meta-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            flex-wrap: wrap; /* Se a tela for muito pequena, a data pula para baixo da categoria */
-        }
-        
-        .item-info .dot {
-            width: 4px;
-            height: 4px;
-            background: var(--text-dim);
-            border-radius: 50%;
-            flex-shrink: 0; /* Impede que a bolinha seja esmagada */
-        }
-        
-        .item-info p {
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-top: 2px;
-            font-style: italic;
-            opacity: 0.8;
-            line-height: 1.2;
-        }
-        
-        /* Ajuste extra no container do item para travar a largura */
+        /* AJUSTE FINAL PARA ITENS COMPACTOS E RESPONSIVOS */
         .item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 100%; /* Não deixa o bloco ser maior que o celular */
-            box-sizing: border-box; /* Garante que o padding não aumente a largura total */
-            padding: 12px 15px;
+            max-width: 100%; /* Impede que o item seja maior que a tela */
+            box-sizing: border-box; /* Garante que padding não aumente o tamanho */
+            padding: 12px;
             gap: 10px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+        
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1; /* Ocupa o espaço restante */
+            min-width: 0; /* Permite que o texto encolha se necessário */
+        }
+        
+        .item-info b {
+            font-size: 13px; /* Reduzido levemente para telas pequenas */
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Se o nome for gigante, ele coloca ... */
+            color: #fff;
+        }
+        
+        .item-info .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            flex-wrap: wrap; /* Se não couber categoria e data, elas quebram linha */
+        }
+        
+        .item-info .dot {
+            width: 3px;
+            height: 3px;
+            background: var(--text-dim);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .item-info p {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 1px;
+            font-style: italic;
+            opacity: 0.8;
+            line-height: 1.1;
+        }
+        
+        /* Ajuste nos botões para não ocuparem muito espaço no celular */
+        .actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0; /* Impede que os botões sumam ou encolham */
+        }
+        
+        .btn-action {
+            width: 30px; /* Menor para celular */
+            height: 30px;
+        }
+        
+        .price {
+            font-weight: 800;
+            font-size: 0.95rem; /* Fonte levemente menor para caber em uma linha */
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -487,6 +509,7 @@
 </script>
 </body>
 </html>
+
 
 
 
