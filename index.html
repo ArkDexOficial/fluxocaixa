@@ -349,17 +349,20 @@
     }
 
     function saveGasto() {
-        const id = document.getElementById('editId').value;
-        const desc = document.getElementById('gDesc').value;
-        const val = document.getElementById('gVal').value;
-        if(!desc || !val) return;
-        const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('gCat').value, date: document.getElementById('gDate').value, obs: document.getElementById('gObs').value };
-        if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g); else db.gastos.push(data);
-        sync(); 
-        ['gDesc','gVal','gObs','editId'].forEach(f => document.getElementById(f).value = '');
-        document.getElementById('btnGasto').innerText = "SALVAR LANÇAMENTO";
-        document.getElementById('btnGasto').style.background = "var(--primary)";
-    }
+            const id = document.getElementById('editId').value;
+            const desc = document.getElementById('gDesc').value;
+            const val = document.getElementById('gVal').value;
+            if(!desc || !val) return;
+            const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('gCat').value, date: document.getElementById('gDate').value, obs: document.getElementById('gObs').value };
+            if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g); else db.gastos.push(data);
+            sync(); 
+            ['gDesc','gVal','gObs','editId'].forEach(f => document.getElementById(f).value = '');
+            
+            // Reset do botão para Azul
+            const btn = document.getElementById('btnGasto');
+            btn.innerText = "SALVAR LANÇAMENTO";
+            btn.style.background = "var(--primary)";
+        }
 
     function prepareEditGasto(id) {
         const g = db.gastos.find(x => x.id == id);
@@ -372,24 +375,36 @@
     }
 
     function saveFixo() {
-        const id = document.getElementById('editFixoId').value;
-        const desc = document.getElementById('fDesc').value;
-        const val = document.getElementById('fVal').value;
-        if(!desc || !val) return;
-        const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('fCat').value };
-        if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f); else db.fixos.push(data);
-        sync(); 
-        ['fDesc','fVal','editFixoId'].forEach(i => document.getElementById(i).value = '');
-        document.getElementById('btnFixo').innerText = "SALVAR CONTA FIXA";
-    }
+            const id = document.getElementById('editFixoId').value;
+            const desc = document.getElementById('fDesc').value;
+            const val = document.getElementById('fVal').value;
+            if(!desc || !val) return;
+            const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('fCat').value };
+            if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f); else db.fixos.push(data);
+            sync(); 
+            ['fDesc','fVal','editFixoId'].forEach(i => document.getElementById(i).value = '');
+            
+            // Reset do botão para Roxo
+            const btn = document.getElementById('btnFixo');
+            btn.innerText = "SALVAR CONTA FIXA";
+            btn.style.background = "var(--secondary)";
+        }
 
     function prepareEditFixo(id) {
-        const f = db.fixos.find(x => x.id == id);
-        document.getElementById('editFixoId').value = f.id; document.getElementById('fDesc').value = f.desc;
-        document.getElementById('fVal').value = f.val; document.getElementById('fCat').value = f.cat;
-        document.getElementById('btnFixo').innerText = "ATUALIZAR CONTA FIXA";
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
+            const f = db.fixos.find(x => x.id == id);
+            document.getElementById('editFixoId').value = f.id; 
+            document.getElementById('fDesc').value = f.desc;
+            document.getElementById('fVal').value = f.val; 
+            document.getElementById('fCat').value = f.cat;
+            
+            // CORREÇÃO: Agora o botão de fixo também fica amarelo ao editar
+            const btnFixo = document.getElementById('btnFixo');
+            btnFixo.innerText = "ATUALIZAR CONTA FIXA";
+            btnFixo.style.background = "var(--warning)"; 
+            btnFixo.style.color = "#000";
+    
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
 
     function addCat() {
         const v = document.getElementById('newCatInput').value.toUpperCase().trim();
@@ -417,3 +432,4 @@
 </script>
 </body>
 </html>
+
