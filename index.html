@@ -104,6 +104,72 @@
         footer { width: 100%; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-top: 1px solid var(--border); padding: 25px 0; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         
         @media (max-width: 768px) { .dashboard { grid-template-columns: 1fr; } .sidebar { position: relative; top: 0; } }
+
+        /* AJUSTES PARA CELULAR */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* Reduz o respiro lateral no celular */
+            }
+        
+            .dashboard {
+                grid-template-columns: 1fr; /* Empilha a barra lateral e o conteúdo */
+                gap: 15px;
+            }
+        
+            .sidebar {
+                position: relative;
+                top: 0;
+                padding: 15px;
+                border-radius: 16px;
+            }
+        
+            .logo {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+        
+            .nav-btn {
+                padding: 10px;
+                font-size: 13px;
+            }
+        
+            /* Faz com que os campos de input ocupem a linha toda no celular */
+            .form-grid {
+                grid-template-columns: 1fr; 
+            }
+            
+            .form-grid div {
+                grid-column: span 1;
+            }
+        
+            .full {
+                grid-column: span 1;
+            }
+        
+            /* Ajusta o tamanho da fonte dos itens para ganhar espaço */
+            .item {
+                padding: 12px 15px;
+            }
+        
+            .price {
+                font-size: 1rem;
+            }
+        
+            .item-info b {
+                font-size: 12px;
+            }
+        
+            /* Modal mais largo no celular */
+            .modal-box {
+                width: 90%;
+                padding: 20px;
+            }
+        
+            .month-selector #monthLabel {
+                min-width: 100px;
+                font-size: 11px;
+            }
+        }     
     </style>
 </head>
 <body>
@@ -431,4 +497,5 @@
 </script>
 </body>
 </html>
+
 
