@@ -100,13 +100,17 @@
 
         .item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
         .item-info b { font-size: 13px; display: block; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-info p { font-size: 10px; color: var(--text-dim); margin-top: 2px; font-style: italic; }
+        .item-info p { font-size: 10px; color: var(--accent); margin-top: 2px; font-style: italic; font-weight: 600; }
         .meta-row { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; flex-wrap: wrap; }
         
         .price { font-weight: 800; font-size: 1rem; color: #fff; white-space: nowrap; margin-left: 10px; }
 
         .actions { display: flex; gap: 8px; flex-shrink: 0; }
         .btn-action { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.5); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        
+        /* RECUPERANDO EFEITOS DE HOVER NOS BOTÕES */
+        .btn-action:hover.edit { color: var(--warning); border-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        .btn-action:hover.del { color: var(--danger); border-color: var(--danger); background: rgba(244, 63, 94, 0.1); }
 
         .chart-row { margin-bottom: 20px; }
         .chart-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
@@ -336,13 +340,13 @@
                     <div class="item-info">
                         <b>${g.desc.toUpperCase()}</b>
                         <div class="meta-row"><span style="color: var(--primary)">${g.cat}</span></div>
-                        ${g.obs ? `<p>Ob: ${g.obs}</p>` : ''}
+                        ${g.obs ? `<p style="color: var(--accent)">Ob: ${g.obs}</p>` : ''}
                     </div>
                     <div style="display:flex; align-items:center; gap:15px">
                         <span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
                         <div class="actions">
-                            <button class="btn-action" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
-                            <button class="btn-action" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
+                            <button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
+                            <button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
                         </div>
                     </div>
                 </div>`;
@@ -359,8 +363,8 @@
                 <div style="display:flex; align-items:center; gap:15px">
                     <span class="price">R$ ${parseFloat(f.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
                     <div class="actions">
-                        <button class="btn-action" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button>
-                        <button class="btn-action" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button>
+                        <button class="btn-action edit" onclick="prepareEditFixo(${f.id})"><i data-lucide="edit-3" size="14"></i></button>
+                        <button class="btn-action del" onclick="askDelete(${f.id}, 'fixo')"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
                 </div>
             </div>`).join('');
