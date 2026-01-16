@@ -232,12 +232,16 @@
             currentUser = user;
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
-            document.getElementById('gDate').value = new Date().toISOString().split('T')[0];
+            
+            // Ajuste para pegar a data local formatada corretamente como YYYY-MM-DD
+            const hoje = new Date();
+            const offset = hoje.getTimezoneOffset();
+            const dataLocal = new Date(hoje.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+            document.getElementById('gDate').value = dataLocal;
+            
             loadUserData();
         } else {
-            currentUser = null;
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('app-screen').style.display = 'none';
+            // ...
         }
         lucide.createIcons();
     });
@@ -269,12 +273,16 @@
 
     function getWeekday(dateString) {
         const days = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+        // Adicionamos o T12:00 para forçar o meio do dia e evitar quebras de fuso horário
         const d = new Date(dateString + "T12:00:00");
         return days[d.getDay()];
     }
 
     function render() {
-        const monthKey = `${viewDate.getFullYear()}-${viewDate.getMonth()}`;
+        // Ajuste para pegar o mês/ano atual da view sem confusão de fuso
+        const currentYear = viewDate.getFullYear();
+        const currentMonth = viewDate.getMonth();
+        
         document.getElementById('monthLabel').innerText = new Intl.DateTimeFormat('pt-BR', {month:'long', year:'numeric'}).format(viewDate);
         
         const catOpts = db.cats.sort().map(c => `<option value="${c}">${c}</option>`).join('');
@@ -282,8 +290,9 @@
         document.getElementById('fCat').innerHTML = catOpts;
 
         const filtrados = db.gastos.filter(g => {
+            // Criamos a data forçando meio-dia para garantir que o dia seja o correto no filtro
             const d = new Date(g.date + "T12:00:00");
-            return `${d.getFullYear()}-${d.getMonth()}` === monthKey;
+            return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
         });
 
         const totalG = filtrados.reduce((s, g) => s + parseFloat(g.val), 0);
@@ -432,4 +441,5 @@
 </script>
 </body>
 </html>
+
 
