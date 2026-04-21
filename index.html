@@ -271,6 +271,7 @@
 
     let userDbRef = null;
     const SHARED_PATH = 'shared_data';
+    const OWNER_UID = 'FQ2KD2mTZuhGKYbGmxswDFvuHjn1';
 
     function loadUserData() {
         userDbRef = database.ref(SHARED_PATH);
@@ -280,11 +281,19 @@
                 db.gastos = data.gastos ? Object.values(data.gastos) : [];
                 db.fixos = data.fixos ? Object.values(data.fixos) : [];
                 db.cats = data.cats || ["GERAL", "MERCADO", "LAZER", "SAÚDE"];
+                render();
             } else {
-                db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
-                database.ref(SHARED_PATH).set(db);
+                // Migra dados do usuario principal para shared_data
+                database.ref('users/' + OWNER_UID).once('value', ownerSnap => {
+                    const ownerData = ownerSnap.val();
+                    if (ownerData) {
+                        database.ref(SHARED_PATH).set(ownerData);
+                    } else {
+                        db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
+                        database.ref(SHARED_PATH).set(db);
+                    }
+                });
             }
-            render();
         });
     }
 
