@@ -279,6 +279,10 @@
                 db.gastos = data.gastos ? Object.values(data.gastos) : [];
                 db.fixos = data.fixos ? Object.values(data.fixos) : [];
                 db.cats = data.cats || ["GERAL", "MERCADO", "LAZER", "SAÚDE"];
+            } else {
+                // Primeiro acesso: inicializa dados padrão e salva no banco
+                db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
+                database.ref('users/' + currentUser.uid).set(db);
             }
             render();
         });
