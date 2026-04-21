@@ -241,7 +241,13 @@
             
             loadUserData();
         } else {
-            // ...
+            currentUser = null;
+            db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('authError').innerText = '';
         }
         lucide.createIcons();
     });
@@ -250,8 +256,11 @@
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
         const errorDiv = document.getElementById('authError');
-        try { await auth.signInWithEmailAndPassword(email, pass); } catch (e) {
-            try { await auth.createUserWithEmailAndPassword(email, pass); } catch (err) { errorDiv.innerText = "ERRO: " + err.message; }
+        errorDiv.innerText = '';
+        try {
+            await auth.signInWithEmailAndPassword(email, pass);
+        } catch (e) {
+            errorDiv.innerText = 'E-mail ou senha incorretos.';
         }
     }
 
@@ -441,5 +450,3 @@
 </script>
 </body>
 </html>
-
-
