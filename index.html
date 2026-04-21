@@ -270,9 +270,10 @@
     }
 
     let userDbRef = null;
+    const SHARED_PATH = 'shared_data';
 
     function loadUserData() {
-        userDbRef = database.ref('users/' + currentUser.uid);
+        userDbRef = database.ref(SHARED_PATH);
         userDbRef.on('value', snapshot => {
             const data = snapshot.val();
             if (data) {
@@ -280,15 +281,14 @@
                 db.fixos = data.fixos ? Object.values(data.fixos) : [];
                 db.cats = data.cats || ["GERAL", "MERCADO", "LAZER", "SAÚDE"];
             } else {
-                // Primeiro acesso: inicializa dados padrão e salva no banco
                 db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
-                database.ref('users/' + currentUser.uid).set(db);
+                database.ref(SHARED_PATH).set(db);
             }
             render();
         });
     }
 
-    function sync() { if(currentUser) database.ref('users/' + currentUser.uid).set(db); }
+    function sync() { if(currentUser) database.ref(SHARED_PATH).set(db); }
 
     function getWeekday(dateString) {
         const days = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
