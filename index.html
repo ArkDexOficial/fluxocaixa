@@ -264,10 +264,16 @@
         }
     }
 
-    function logout() { auth.signOut(); }
+    function logout() {
+        if (userDbRef) { userDbRef.off(); userDbRef = null; }
+        auth.signOut();
+    }
+
+    let userDbRef = null;
 
     function loadUserData() {
-        database.ref('users/' + currentUser.uid).on('value', snapshot => {
+        userDbRef = database.ref('users/' + currentUser.uid);
+        userDbRef.on('value', snapshot => {
             const data = snapshot.val();
             if (data) {
                 db.gastos = data.gastos ? Object.values(data.gastos) : [];
