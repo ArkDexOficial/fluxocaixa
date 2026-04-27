@@ -95,6 +95,10 @@
         .modal.active { display: flex; }
         .modal-box { background: var(--card-bg); padding: 32px; border-radius: 28px; width: 100%; max-width: 380px; border: 1px solid var(--border); text-align: center; }
 
+        /* Busca/filtro */
+        .filtro-bar { display: flex; gap: 10px; width: 100%; margin-bottom: 5px; }
+        .filtro-bar input, .filtro-bar select { padding: 10px 14px; font-size: 13px; }
+
         /* Lancamentos agendados */
         .item.agendado { border-color: var(--warning); background: rgba(245, 158, 11, 0.06); }
         .badge-agendado { font-size: 9px; font-weight: 800; color: var(--warning); background: rgba(245, 158, 11, 0.15); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-top: 3px; }
@@ -167,12 +171,23 @@
                     <button class="btn-main full" id="btnGasto" onclick="saveGasto()">SALVAR LANÇAMENTO</button>
                 </div>
             </div>
+            <div class="filtro-bar">
+                <input type="text" id="filtroTexto" placeholder="🔍 Buscar lançamento..." oninput="render()" style="flex:1">
+                <select id="filtroCat" onchange="render()" style="width:160px;"><option value="">Todas categorias</option></select>
+            </div>
             <div id="listaGastos" style="width: 100%;"></div>
         </main>
 
         <main id="tab-graficos" class="content-area">
-            <div class="section-header"><div class="section-title" style="color: var(--primary)"><i data-lucide="bar-chart-3"></i> Resumo Mensal</div></div>
+            <div class="section-header"><div class="section-title" style="color: var(--primary)"><i data-lucide="bar-chart-3"></i> Resumo Mensal</div>
+                <button class="btn-main" onclick="exportarPDF()" style="width:auto;padding:8px 18px;font-size:12px;"><i data-lucide="download" size="14" style="display:inline;vertical-align:middle;margin-right:4px;"></i> PDF</button>
+            </div>
             <div class="card" id="chartContainer"></div>
+            <div class="card" id="evolucaoContainer" style="margin-top:0;">
+                <div style="font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px;">Evolução — Últimos 6 meses</div>
+                <div id="evolucaoChart"></div>
+            </div>
+            <div class="card" id="comparativoContainer" style="margin-top:0;"></div>
         </main>
 
         <main id="tab-fixos" class="content-area">
@@ -327,7 +342,6 @@
     }
 
     function render() {
-        // Ajuste para pegar o mês/ano atual da view sem confusão de fuso
         const currentYear = viewDate.getFullYear();
         const currentMonth = viewDate.getMonth();
         
@@ -336,10 +350,17 @@
         const catOpts = db.cats.sort().map(c => `<option value="${c}">${c}</option>`).join('');
         document.getElementById('gCat').innerHTML = catOpts;
         document.getElementById('fCat').innerHTML = catOpts;
+        document.getElementById('filtroCat').innerHTML = `<option value="">Todas categorias</option>` + catOpts;
+
+        const filtroTexto = (document.getElementById('filtroTexto').value || '').toLowerCase();
+        const filtroCat = document.getElementById('filtroCat').value;
 
         const filtrados = db.gastos.filter(g => {
             const d = new Date(g.date + "T12:00:00");
-            return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+            const noMes = d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+            const textoOk = !filtroTexto || g.desc.toLowerCase().includes(filtroTexto) || (g.obs && g.obs.toLowerCase().includes(filtroTexto));
+            const catOk = !filtroCat || g.cat === filtroCat;
+            return noMes && textoOk && catOk;
         });
 
         const totalG = filtrados.reduce((s, g) => s + parseFloat(g.val), 0);
@@ -349,7 +370,6 @@
         const containerG = document.getElementById('listaGastos');
         containerG.innerHTML = '';
 
-        // Banner de agendados futuros
         const hoje = new Date();
         const offset = hoje.getTimezoneOffset();
         const hojeStr = new Date(hoje.getTime() - offset * 60000).toISOString().split('T')[0];
@@ -403,6 +423,8 @@
             </div>`).join('');
         
         renderChart(filtrados);
+        renderEvolucao();
+        renderComparativo();
         lucide.createIcons();
     }
 
@@ -500,6 +522,71 @@
     }
 
     function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
+
+    function renderEvolucao() {
+        const meses = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(viewDate.getFullYear(), viewDate.getMonth() - i, 1);
+            const y = d.getFullYear(), m = d.getMonth();
+            const total = db.gastos.filter(g => { const gd = new Date(g.date+"T12:00:00"); return gd.getFullYear()===y && gd.getMonth()===m; }).reduce((s,g)=>s+parseFloat(g.val),0)
+                        + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+            meses.push({ label: new Intl.DateTimeFormat('pt-BR',{month:'short'}).format(d), total });
+        }
+        const maxVal = Math.max(...meses.map(m=>m.total), 1);
+        const barW = 100 / meses.length;
+        document.getElementById('evolucaoChart').innerHTML = `
+            <div style="display:flex; align-items:flex-end; gap:8px; height:100px; width:100%;">
+                ${meses.map((m,i) => {
+                    const h = Math.max((m.total/maxVal)*90, m.total>0?4:0);
+                    const isAtual = i===5;
+                    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                        <span style="font-size:9px;font-weight:800;color:var(--text-dim);">R$${(m.total/1000).toFixed(1)}k</span>
+                        <div style="width:100%;height:${h}px;background:${isAtual?'linear-gradient(180deg,var(--primary),var(--accent))':'rgba(56,189,248,0.25)'};border-radius:6px 6px 0 0;transition:height 0.5s;"></div>
+                        <span style="font-size:9px;font-weight:800;color:${isAtual?'var(--primary)':'var(--text-dim)'};text-transform:uppercase;">${m.label}</span>
+                    </div>`;
+                }).join('')}
+            </div>`;
+    }
+
+    function renderComparativo() {
+        const y = viewDate.getFullYear(), m = viewDate.getMonth();
+        const dAnt = new Date(y, m-1, 1);
+        const totalAtual = db.gastos.filter(g=>{const d=new Date(g.date+"T12:00:00");return d.getFullYear()===y&&d.getMonth()===m;}).reduce((s,g)=>s+parseFloat(g.val),0) + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+        const totalAnt = db.gastos.filter(g=>{const d=new Date(g.date+"T12:00:00");return d.getFullYear()===dAnt.getFullYear()&&d.getMonth()===dAnt.getMonth();}).reduce((s,g)=>s+parseFloat(g.val),0) + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+        const diff = totalAtual - totalAnt;
+        const pct = totalAnt > 0 ? ((diff/totalAnt)*100).toFixed(1) : null;
+        const mesAtual = new Intl.DateTimeFormat('pt-BR',{month:'long'}).format(viewDate);
+        const mesAnt = new Intl.DateTimeFormat('pt-BR',{month:'long'}).format(dAnt);
+        const cor = diff > 0 ? 'var(--danger)' : diff < 0 ? 'var(--accent)' : 'var(--text-dim)';
+        const seta = diff > 0 ? '▲' : diff < 0 ? '▼' : '●';
+        document.getElementById('comparativoContainer').innerHTML = `
+            <div style="font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Comparativo de meses</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                <div><div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;">${mesAnt}</div><div style="font-size:1.2rem;font-weight:800;color:#fff;">R$ ${totalAnt.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+                <div style="text-align:center;"><div style="font-size:1.4rem;color:${cor};">${seta}</div><div style="font-size:12px;font-weight:800;color:${cor};">${pct !== null ? (diff>0?'+':'')+pct+'%' : '—'}</div></div>
+                <div style="text-align:right;"><div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;">${mesAtual}</div><div style="font-size:1.2rem;font-weight:800;color:#fff;">R$ ${totalAtual.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+            </div>`;
+    }
+
+    function exportarPDF() {
+        const y = viewDate.getFullYear(), m = viewDate.getMonth();
+        const mesLabel = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(viewDate);
+        const filtrados = db.gastos.filter(g=>{const d=new Date(g.date+"T12:00:00");return d.getFullYear()===y&&d.getMonth()===m;}).sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const totalG = filtrados.reduce((s,g)=>s+parseFloat(g.val),0);
+        const totalF = db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+        const linhas = filtrados.map(g=>`<tr><td>${g.date.split('-').reverse().join('/')}</td><td>${g.desc.toUpperCase()}</td><td>${g.cat}</td><td style="text-align:right;">R$ ${parseFloat(g.val).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('');
+        const fixosLinhas = db.fixos.map(f=>`<tr><td colspan="2">${f.desc.toUpperCase()}</td><td>${f.cat}</td><td style="text-align:right;">R$ ${parseFloat(f.val).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('');
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório ${mesLabel}</title>
+        <style>body{font-family:sans-serif;padding:30px;color:#111;}h1{font-size:20px;margin-bottom:4px;}h2{font-size:14px;margin:20px 0 8px;color:#555;}table{width:100%;border-collapse:collapse;font-size:13px;}th{background:#0f172a;color:#fff;padding:8px;}td{padding:7px;border-bottom:1px solid #ddd;}.total{font-weight:bold;font-size:15px;margin-top:16px;text-align:right;}</style></head>
+        <body><h1>Fluxo de Caixa — ${mesLabel}</h1>
+        <h2>Lançamentos</h2><table><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th></tr>${linhas}</table>
+        ${db.fixos.length?`<h2>Custos Fixos</h2><table><tr><th colspan="2">Descrição</th><th>Categoria</th><th>Valor</th></tr>${fixosLinhas}</table>`:''}
+        <p class="total">Total Lançamentos: R$ ${totalG.toLocaleString('pt-BR',{minimumFractionDigits:2})}</p>
+        <p class="total">Total Fixos: R$ ${totalF.toLocaleString('pt-BR',{minimumFractionDigits:2})}</p>
+        <p class="total">TOTAL GERAL: R$ ${(totalG+totalF).toLocaleString('pt-BR',{minimumFractionDigits:2})}</p>
+        </body></html>`;
+        const w = window.open('','_blank'); w.document.write(html); w.document.close(); w.print();
+    }
 
     function openEditCatModal(cat) {
         document.getElementById('editCatOld').value = cat;
