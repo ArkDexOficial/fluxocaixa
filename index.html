@@ -95,6 +95,13 @@
         .modal.active { display: flex; }
         .modal-box { background: var(--card-bg); padding: 32px; border-radius: 28px; width: 100%; max-width: 380px; border: 1px solid var(--border); text-align: center; }
 
+        /* Lancamentos agendados */
+        .item.agendado { border-color: var(--warning); background: rgba(245, 158, 11, 0.06); }
+        .badge-agendado { font-size: 9px; font-weight: 800; color: var(--warning); background: rgba(245, 158, 11, 0.15); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-top: 3px; }
+        .agendados-banner { background: rgba(245,158,11,0.10); border: 1px solid var(--warning); border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 10px; }
+        .modal-edit-cat { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; z-index:1001; backdrop-filter:blur(8px); padding:20px; }
+        .modal-edit-cat.active { display:flex; }
+
         @media (max-width: 768px) { 
             body { padding: 15px; }
             .dashboard { display: block; width: 100%; } 
@@ -203,6 +210,19 @@
         <div style="display:flex; gap:12px; margin-top:25px">
             <button class="btn-main" style="background:var(--border); color:#fff" onclick="closeModal()">CANCELAR</button>
             <button class="btn-main" style="background:var(--danger); color:#fff" id="confirmDeleteBtn">EXCLUIR</button>
+        </div>
+    </div>
+</div>
+
+<div id="editCatModal" class="modal-edit-cat">
+    <div class="modal-box">
+        <h3 style="margin-bottom:20px;">Editar Categoria</h3>
+        <input type="hidden" id="editCatOld">
+        <label>Novo nome</label>
+        <input type="text" id="editCatNew" placeholder="Novo nome..." style="margin-bottom:20px;">
+        <div style="display:flex; gap:12px; margin-top:10px">
+            <button class="btn-main" style="background:var(--border); color:#fff" onclick="closeEditCatModal()">CANCELAR</button>
+            <button class="btn-main" style="background:var(--accent);" onclick="saveEditCat()">SALVAR</button>
         </div>
     </div>
 </div>
@@ -318,7 +338,6 @@
         document.getElementById('fCat').innerHTML = catOpts;
 
         const filtrados = db.gastos.filter(g => {
-            // Criamos a data forçando meio-dia para garantir que o dia seja o correto no filtro
             const d = new Date(g.date + "T12:00:00");
             return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
         });
@@ -329,20 +348,31 @@
 
         const containerG = document.getElementById('listaGastos');
         containerG.innerHTML = '';
+
+        // Banner de agendados futuros
+        const hoje = new Date();
+        const offset = hoje.getTimezoneOffset();
+        const hojeStr = new Date(hoje.getTime() - offset * 60000).toISOString().split('T')[0];
+        const agendados = db.gastos.filter(g => g.date > hojeStr);
+        if (agendados.length > 0) {
+            containerG.innerHTML += `<div class="agendados-banner"><i data-lucide="clock" size="18"></i> ${agendados.length} lançamento(s) agendado(s) para dias futuros</div>`;
+        }
+
         const grupos = {};
         filtrados.forEach(g => { if(!grupos[g.date]) grupos[g.date] = []; grupos[g.date].push(g); });
 
         Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
-            let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span></div>`;
+            const isFuture = date > hojeStr;
+            let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span>${isFuture ? `<span style="font-size:9px;font-weight:800;color:var(--warning);background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:6px;margin-left:4px;">AGENDADO</span>` : ''}</div>`;
             grupos[date].forEach(g => {
                 groupHtml += `
-                <div class="item">
+                <div class="item${isFuture ? ' agendado' : ''}">
                     <div class="item-info">
                         <b>${g.desc.toUpperCase()}</b>
-                        <span style="font-size:9px; color:var(--primary); font-weight:700">${g.cat}</span>
+                        <span style="font-size:9px; color:${isFuture ? 'var(--warning)' : 'var(--primary)'}; font-weight:700">${g.cat}${isFuture ? ' · AGENDADO' : ''}</span>
                         ${g.obs ? `<p>Ob: ${g.obs}</p>` : ''}
                     </div>
-                    <span class="price">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                    <span class="price" style="color:${isFuture ? 'var(--warning)' : '#fff'}">R$ ${parseFloat(g.val).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
                     <div class="actions">
                         <button class="btn-action edit" onclick="prepareEditGasto(${g.id})"><i data-lucide="edit-3" size="14"></i></button>
                         <button class="btn-action del" onclick="askDelete(${g.id}, 'gasto')"><i data-lucide="trash-2" size="14"></i></button>
@@ -363,8 +393,9 @@
             </div>`).join('');
 
         document.getElementById('catManagerList').innerHTML = db.cats.sort().map(c => `
-            <div style="background:var(--card-bg); padding:10px; border-radius:10px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:12px; font-weight:700;">${c}</span>
+            <div style="background:var(--card-bg); padding:10px; border-radius:10px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                <span style="font-size:12px; font-weight:700; flex:1;">${c}</span>
+                <button class="btn-action edit" onclick="openEditCatModal('${c}')" title="Editar"><i data-lucide="edit-3" size="12"></i></button>
                 <button class="btn-action del" onclick="askDelete('${c}', 'cat')"><i data-lucide="x" size="12"></i></button>
             </div>`).join('');
         
@@ -466,6 +497,24 @@
     }
 
     function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
+
+    function openEditCatModal(cat) {
+        document.getElementById('editCatOld').value = cat;
+        document.getElementById('editCatNew').value = cat;
+        document.getElementById('editCatModal').classList.add('active');
+    }
+    function closeEditCatModal() { document.getElementById('editCatModal').classList.remove('active'); }
+    function saveEditCat() {
+        const oldName = document.getElementById('editCatOld').value;
+        const newName = document.getElementById('editCatNew').value.toUpperCase().trim();
+        if (!newName || newName === oldName) { closeEditCatModal(); return; }
+        if (db.cats.includes(newName)) { alert('Categoria já existe!'); return; }
+        db.cats = db.cats.map(c => c === oldName ? newName : c);
+        db.gastos = db.gastos.map(g => g.cat === oldName ? {...g, cat: newName} : g);
+        db.fixos = db.fixos.map(f => f.cat === oldName ? {...f, cat: newName} : f);
+        sync();
+        closeEditCatModal();
+    }
 </script>
 </body>
 </html>
