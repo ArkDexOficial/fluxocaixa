@@ -71,7 +71,7 @@
         .btn-main:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
         .date-group { margin-top: 25px; width: 100%; }
-        .date-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .date-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; width: 100%; }
         .date-header .txt-date { font-size: 14px; font-weight: 800; color: var(--primary); }
         .date-header .txt-weekday { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; background: rgba(45, 212, 191, 0.1); padding: 2px 8px; border-radius: 6px; }
 
@@ -363,7 +363,8 @@
 
         Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
             const isFuture = date > hojeStr;
-            let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span>${isFuture ? `<span style="font-size:9px;font-weight:800;color:var(--warning);background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:6px;margin-left:4px;">AGENDADO</span>` : ''}</div>`;
+            const totalDia = grupos[date].reduce((s, g) => s + parseFloat(g.val), 0);
+            let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span>${isFuture ? `<span style="font-size:9px;font-weight:800;color:var(--warning);background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:6px;margin-left:4px;">AGENDADO</span>` : ''}<span style="margin-left:auto; font-size:13px; font-weight:800; color:${isFuture ? 'var(--warning)' : 'var(--accent)'};">R$ ${totalDia.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span></div>`;
             grupos[date].forEach(g => {
                 groupHtml += `
                 <div class="item${isFuture ? ' agendado' : ''}">
