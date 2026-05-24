@@ -32,7 +32,6 @@
         html, body { width: 100%; overflow-x: hidden; background-color: var(--bg); color: var(--text-main); }
         body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
 
-        /* TELAS */
         #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; width: 100%; }
         .login-card { background: var(--card-bg); padding: 40px; border-radius: 28px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; }
 
@@ -95,16 +94,17 @@
         .modal.active { display: flex; }
         .modal-box { background: var(--card-bg); padding: 32px; border-radius: 28px; width: 100%; max-width: 380px; border: 1px solid var(--border); text-align: center; }
 
-        /* Busca/filtro */
         .filtro-bar { display: flex; gap: 10px; width: 100%; margin-bottom: 5px; }
         .filtro-bar input, .filtro-bar select { padding: 10px 14px; font-size: 13px; }
 
-        /* Lancamentos agendados */
         .item.agendado { border-color: var(--warning); background: rgba(245, 158, 11, 0.06); }
         .badge-agendado { font-size: 9px; font-weight: 800; color: var(--warning); background: rgba(245, 158, 11, 0.15); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-top: 3px; }
         .agendados-banner { background: rgba(245,158,11,0.10); border: 1px solid var(--warning); border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 10px; }
         .modal-edit-cat { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; z-index:1001; backdrop-filter:blur(8px); padding:20px; }
         .modal-edit-cat.active { display:flex; }
+
+        /* Badge de busca mostrando todos os meses */
+        .busca-global-banner { background: rgba(56,189,248,0.08); border: 1px solid var(--primary); border-radius: 14px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
 
         @media (max-width: 768px) { 
             body { padding: 15px; }
@@ -258,7 +258,9 @@
     const database = firebase.database();
 
     let currentUser = null;
-    let viewDate = new Date();
+    // FIX: usar new Date() mas normalizar para o primeiro dia do mês sem converter fuso
+    let viewYear = new Date().getFullYear();
+    let viewMonth = new Date().getMonth();
     let db = { gastos: [], fixos: [], cats: ["GERAL", "MERCADO", "LAZER", "SAÚDE"] };
     let pendingDelete = { id: null, type: null };
 
@@ -268,10 +270,11 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
             
-            // Ajuste para pegar a data local formatada corretamente como YYYY-MM-DD
+            // Data local correta para o campo de data
             const hoje = new Date();
-            const offset = hoje.getTimezoneOffset();
-            const dataLocal = new Date(hoje.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+            const dataLocal = hoje.getFullYear() + '-'
+                + String(hoje.getMonth() + 1).padStart(2, '0') + '-'
+                + String(hoje.getDate()).padStart(2, '0');
             document.getElementById('gDate').value = dataLocal;
             
             loadUserData();
@@ -318,7 +321,6 @@
                 db.cats = data.cats || ["GERAL", "MERCADO", "LAZER", "SAÚDE"];
                 render();
             } else {
-                // Migra dados do usuario principal para shared_data
                 database.ref('users/' + OWNER_UID).once('value', ownerSnap => {
                     const ownerData = ownerSnap.val();
                     if (ownerData) {
@@ -336,16 +338,22 @@
 
     function getWeekday(dateString) {
         const days = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
-        // Adicionamos o T12:00 para forçar o meio do dia e evitar quebras de fuso horário
+        // T12:00:00 para evitar quebra de fuso horário na data
         const d = new Date(dateString + "T12:00:00");
         return days[d.getDay()];
     }
 
+    // FIX: helper para parsear data de um lançamento sem problema de fuso
+    function parseDate(dateStr) {
+        // dateStr formato: "YYYY-MM-DD"
+        const parts = dateStr.split('-');
+        return { year: parseInt(parts[0]), month: parseInt(parts[1]) - 1, day: parseInt(parts[2]) };
+    }
+
     function render() {
-        const currentYear = viewDate.getFullYear();
-        const currentMonth = viewDate.getMonth();
-        
-        document.getElementById('monthLabel').innerText = new Intl.DateTimeFormat('pt-BR', {month:'long', year:'numeric'}).format(viewDate);
+        // Atualiza label do mês
+        const labelDate = new Date(viewYear, viewMonth, 1);
+        document.getElementById('monthLabel').innerText = new Intl.DateTimeFormat('pt-BR', {month:'long', year:'numeric'}).format(labelDate);
         
         const catOpts = db.cats.sort().map(c => `<option value="${c}">${c}</option>`).join('');
         document.getElementById('gCat').innerHTML = catOpts;
@@ -356,39 +364,73 @@
         filtroCatEl.innerHTML = `<option value="">Todas categorias</option>` + catOpts;
         filtroCatEl.value = filtroCatAtual;
 
-        const filtroTexto = (document.getElementById('filtroTexto').value || '').toLowerCase();
+        const filtroTexto = (document.getElementById('filtroTexto').value || '').toLowerCase().trim();
         const filtroCat = document.getElementById('filtroCat').value;
 
+        // FIX: quando há texto de busca, pesquisa em TODOS os lançamentos (todos os meses)
+        // Quando não há busca, filtra apenas pelo mês visualizado
+        const buscaGlobal = filtroTexto.length > 0;
+
         const filtrados = db.gastos.filter(g => {
-            const d = new Date(g.date + "T12:00:00");
-            const noMes = d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-            const textoOk = !filtroTexto || g.desc.toLowerCase().includes(filtroTexto) || (g.obs && g.obs.toLowerCase().includes(filtroTexto));
+            const d = parseDate(g.date);
+            // Se busca global, ignora filtro de mês; senão aplica filtro do mês visualizado
+            const noMes = buscaGlobal || (d.year === viewYear && d.month === viewMonth);
+            // Pesquisa em título (desc) E anotações (obs) — insensível a maiúsculas
+            const textoOk = !filtroTexto || 
+                g.desc.toLowerCase().includes(filtroTexto) || 
+                (g.obs && g.obs.toLowerCase().includes(filtroTexto)) ||
+                (g.cat && g.cat.toLowerCase().includes(filtroTexto));
             const catOk = !filtroCat || g.cat === filtroCat;
             return noMes && textoOk && catOk;
         });
 
-        const totalG = filtrados.reduce((s, g) => s + parseFloat(g.val), 0);
+        // Total do mês (sempre usa o mês visualizado para o saldo, independente da busca)
+        const gastosDoMes = db.gastos.filter(g => {
+            const d = parseDate(g.date);
+            return d.year === viewYear && d.month === viewMonth;
+        });
+        const totalG = gastosDoMes.reduce((s, g) => s + parseFloat(g.val), 0);
         const totalF = db.fixos.reduce((s, f) => s + parseFloat(f.val), 0);
         document.getElementById('totalDisplay').innerText = `R$ ${(totalG + totalF).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
 
         const containerG = document.getElementById('listaGastos');
         containerG.innerHTML = '';
 
+        // Data de hoje como string YYYY-MM-DD sem converter fuso
         const hoje = new Date();
-        const offset = hoje.getTimezoneOffset();
-        const hojeStr = new Date(hoje.getTime() - offset * 60000).toISOString().split('T')[0];
-        const agendados = db.gastos.filter(g => g.date > hojeStr);
-        if (agendados.length > 0) {
-            containerG.innerHTML += `<div class="agendados-banner"><i data-lucide="clock" size="18"></i> ${agendados.length} lançamento(s) agendado(s) para dias futuros</div>`;
+        const hojeStr = hoje.getFullYear() + '-'
+            + String(hoje.getMonth() + 1).padStart(2, '0') + '-'
+            + String(hoje.getDate()).padStart(2, '0');
+
+        // Banner de busca global
+        if (buscaGlobal) {
+            containerG.innerHTML += `<div class="busca-global-banner"><i data-lucide="search" size="16"></i> Buscando em todos os meses — ${filtrados.length} resultado(s) encontrado(s)</div>`;
+        }
+
+        // Banner de agendados (só quando não está buscando)
+        if (!buscaGlobal) {
+            const agendados = db.gastos.filter(g => g.date > hojeStr);
+            if (agendados.length > 0) {
+                containerG.innerHTML += `<div class="agendados-banner"><i data-lucide="clock" size="18"></i> ${agendados.length} lançamento(s) agendado(s) para dias futuros</div>`;
+            }
+        }
+
+        if (filtrados.length === 0) {
+            containerG.innerHTML += `<div style="text-align:center; color:var(--text-dim); padding: 40px 0; font-size: 14px; font-weight: 600;">Nenhum lançamento encontrado.</div>`;
         }
 
         const grupos = {};
         filtrados.forEach(g => { if(!grupos[g.date]) grupos[g.date] = []; grupos[g.date].push(g); });
 
-        Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
+        Object.keys(grupos).sort((a,b) => b > a ? 1 : -1).forEach(date => {
             const isFuture = date > hojeStr;
             const totalDia = grupos[date].reduce((s, g) => s + parseFloat(g.val), 0);
-            let groupHtml = `<div class="date-group"><div class="date-header"><span class="txt-date">${date.split('-').reverse().join('/')}</span><span class="txt-weekday">${getWeekday(date)}</span>${isFuture ? `<span style="font-size:9px;font-weight:800;color:var(--warning);background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:6px;margin-left:4px;">AGENDADO</span>` : ''}<span style="margin-left:auto; font-size:13px; font-weight:800; color:${isFuture ? 'var(--warning)' : 'var(--accent)'};">R$ ${totalDia.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span></div>`;
+            let groupHtml = `<div class="date-group"><div class="date-header">
+                <span class="txt-date">${date.split('-').reverse().join('/')}</span>
+                <span class="txt-weekday">${getWeekday(date)}</span>
+                ${isFuture ? `<span style="font-size:9px;font-weight:800;color:var(--warning);background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:6px;margin-left:4px;">AGENDADO</span>` : ''}
+                <span style="margin-left:auto; font-size:13px; font-weight:800; color:${isFuture ? 'var(--warning)' : 'var(--accent)'};">R$ ${totalDia.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+            </div>`;
             grupos[date].forEach(g => {
                 groupHtml += `
                 <div class="item${isFuture ? ' agendado' : ''}">
@@ -426,7 +468,7 @@
                 </div>
             </div>`).join('');
         
-        renderChart(filtrados);
+        renderChart(gastosDoMes);
         renderEvolucao();
         renderComparativo();
         lucide.createIcons();
@@ -446,20 +488,30 @@
     }
 
     function saveGasto() {
-            const id = document.getElementById('editId').value;
-            const desc = document.getElementById('gDesc').value;
-            const val = document.getElementById('gVal').value;
-            if(!desc || !val) return;
-            const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('gCat').value, date: document.getElementById('gDate').value, obs: document.getElementById('gObs').value };
-            if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g); else db.gastos.push(data);
-            sync(); 
-            ['gDesc','gVal','gObs','editId'].forEach(f => document.getElementById(f).value = '');
-            
-            // Reset do botão para Azul
-            const btn = document.getElementById('btnGasto');
-            btn.innerText = "SALVAR LANÇAMENTO";
-            btn.style.background = "var(--primary)";
-        }
+        const id = document.getElementById('editId').value;
+        const desc = document.getElementById('gDesc').value;
+        const val = document.getElementById('gVal').value;
+        if(!desc || !val) return;
+        const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('gCat').value, date: document.getElementById('gDate').value, obs: document.getElementById('gObs').value };
+        if(id) db.gastos = db.gastos.map(g => g.id == id ? data : g); else db.gastos.push(data);
+
+        // Navega para o mês do lançamento ANTES de renderizar
+        const partes = data.date.split('-');
+        viewYear = parseInt(partes[0]);
+        viewMonth = parseInt(partes[1]) - 1;
+
+        // Limpa os campos
+        ['gDesc','gVal','gObs','editId'].forEach(f => document.getElementById(f).value = '');
+        const btn = document.getElementById('btnGasto');
+        btn.innerText = "SALVAR LANÇAMENTO";
+        btn.style.background = "var(--primary)";
+        btn.style.color = "#000";
+
+        // Renderiza imediatamente com os dados locais (não espera o Firebase)
+        render();
+        // Depois sincroniza com o Firebase em background
+        sync();
+    }
 
     function prepareEditGasto(id) {
         const g = db.gastos.find(x => x.id == id);
@@ -468,40 +520,40 @@
         document.getElementById('gDate').value = g.date; document.getElementById('gObs').value = g.obs || '';
         document.getElementById('btnGasto').innerText = "ATUALIZAR";
         document.getElementById('btnGasto').style.background = "var(--warning)";
+        document.getElementById('btnGasto').style.color = "#000";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function saveFixo() {
-            const id = document.getElementById('editFixoId').value;
-            const desc = document.getElementById('fDesc').value;
-            const val = document.getElementById('fVal').value;
-            if(!desc || !val) return;
-            const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('fCat').value };
-            if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f); else db.fixos.push(data);
-            sync(); 
-            ['fDesc','fVal','editFixoId'].forEach(i => document.getElementById(i).value = '');
-            
-            // Reset do botão para Roxo
-            const btn = document.getElementById('btnFixo');
-            btn.innerText = "SALVAR CONTA FIXA";
-            btn.style.background = "var(--secondary)";
-        }
+        const id = document.getElementById('editFixoId').value;
+        const desc = document.getElementById('fDesc').value;
+        const val = document.getElementById('fVal').value;
+        if(!desc || !val) return;
+        const data = { id: id ? parseInt(id) : Date.now(), desc, val, cat: document.getElementById('fCat').value };
+        if(id) db.fixos = db.fixos.map(f => f.id == id ? data : f); else db.fixos.push(data);
+        sync(); 
+        ['fDesc','fVal','editFixoId'].forEach(i => document.getElementById(i).value = '');
+        
+        const btn = document.getElementById('btnFixo');
+        btn.innerText = "SALVAR CONTA FIXA";
+        btn.style.background = "var(--secondary)";
+        btn.style.color = "#fff";
+    }
 
     function prepareEditFixo(id) {
-            const f = db.fixos.find(x => x.id == id);
-            document.getElementById('editFixoId').value = f.id; 
-            document.getElementById('fDesc').value = f.desc;
-            document.getElementById('fVal').value = f.val; 
-            document.getElementById('fCat').value = f.cat;
-            
-            // CORREÇÃO: Agora o botão de fixo também fica amarelo ao editar
-            const btnFixo = document.getElementById('btnFixo');
-            btnFixo.innerText = "ATUALIZAR CONTA FIXA";
-            btnFixo.style.background = "var(--warning)"; 
-            btnFixo.style.color = "#000";
-    
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
+        const f = db.fixos.find(x => x.id == id);
+        document.getElementById('editFixoId').value = f.id; 
+        document.getElementById('fDesc').value = f.desc;
+        document.getElementById('fVal').value = f.val; 
+        document.getElementById('fCat').value = f.cat;
+        
+        const btnFixo = document.getElementById('btnFixo');
+        btnFixo.innerText = "ATUALIZAR CONTA FIXA";
+        btnFixo.style.background = "var(--warning)"; 
+        btnFixo.style.color = "#000";
+
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
 
     function addCat() {
         const v = document.getElementById('newCatInput').value.toUpperCase().trim();
@@ -525,19 +577,29 @@
         lucide.createIcons();
     }
 
-    function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
+    // FIX: changeMonth agora usa viewYear/viewMonth separados, sem mutar um objeto Date
+    function changeMonth(s) {
+        viewMonth += s;
+        if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        render();
+    }
 
     function renderEvolucao() {
         const meses = [];
         for (let i = 5; i >= 0; i--) {
-            const d = new Date(viewDate.getFullYear(), viewDate.getMonth() - i, 1);
-            const y = d.getFullYear(), m = d.getMonth();
-            const total = db.gastos.filter(g => { const gd = new Date(g.date+"T12:00:00"); return gd.getFullYear()===y && gd.getMonth()===m; }).reduce((s,g)=>s+parseFloat(g.val),0)
+            let m = viewMonth - i;
+            let y = viewYear;
+            while (m < 0) { m += 12; y--; }
+            const d = new Date(y, m, 1);
+            const total = db.gastos.filter(g => { 
+                const gd = parseDate(g.date); 
+                return gd.year === y && gd.month === m; 
+            }).reduce((s,g)=>s+parseFloat(g.val),0)
                         + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
             meses.push({ label: new Intl.DateTimeFormat('pt-BR',{month:'short'}).format(d), total });
         }
         const maxVal = Math.max(...meses.map(m=>m.total), 1);
-        const barW = 100 / meses.length;
         document.getElementById('evolucaoChart').innerHTML = `
             <div style="display:flex; align-items:flex-end; gap:8px; height:100px; width:100%;">
                 ${meses.map((m,i) => {
@@ -553,13 +615,22 @@
     }
 
     function renderComparativo() {
-        const y = viewDate.getFullYear(), m = viewDate.getMonth();
-        const dAnt = new Date(y, m-1, 1);
-        const totalAtual = db.gastos.filter(g=>{const d=new Date(g.date+"T12:00:00");return d.getFullYear()===y&&d.getMonth()===m;}).reduce((s,g)=>s+parseFloat(g.val),0) + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
-        const totalAnt = db.gastos.filter(g=>{const d=new Date(g.date+"T12:00:00");return d.getFullYear()===dAnt.getFullYear()&&d.getMonth()===dAnt.getMonth();}).reduce((s,g)=>s+parseFloat(g.val),0) + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+        const y = viewYear, m = viewMonth;
+        let mAnt = m - 1, yAnt = y;
+        if (mAnt < 0) { mAnt = 11; yAnt--; }
+        const dAnt = new Date(yAnt, mAnt, 1);
+
+        const totalAtual = db.gastos.filter(g=>{
+            const d=parseDate(g.date); return d.year===y && d.month===m;
+        }).reduce((s,g)=>s+parseFloat(g.val),0) + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+
+        const totalAnt = db.gastos.filter(g=>{
+            const d=parseDate(g.date); return d.year===yAnt && d.month===mAnt;
+        }).reduce((s,g)=>s+parseFloat(g.val),0) + db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
+
         const diff = totalAtual - totalAnt;
         const pct = totalAnt > 0 ? ((diff/totalAnt)*100).toFixed(1) : null;
-        const mesAtual = new Intl.DateTimeFormat('pt-BR',{month:'long'}).format(viewDate);
+        const mesAtual = new Intl.DateTimeFormat('pt-BR',{month:'long'}).format(new Date(y, m, 1));
         const mesAnt = new Intl.DateTimeFormat('pt-BR',{month:'long'}).format(dAnt);
         const cor = diff > 0 ? 'var(--danger)' : diff < 0 ? 'var(--accent)' : 'var(--text-dim)';
         const seta = diff > 0 ? '▲' : diff < 0 ? '▼' : '●';
@@ -573,9 +644,11 @@
     }
 
     function exportarPDF() {
-        const y = viewDate.getFullYear(), m = viewDate.getMonth();
-        const mesLabel = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(viewDate);
-        const filtrados = db.gastos.filter(g=>{const d=new Date(g.date+"T12:00:00");return d.getFullYear()===y&&d.getMonth()===m;}).sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const y = viewYear, m = viewMonth;
+        const mesLabel = new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(new Date(y, m, 1));
+        const filtrados = db.gastos.filter(g=>{
+            const d=parseDate(g.date); return d.year===y && d.month===m;
+        }).sort((a,b)=> a.date > b.date ? 1 : -1);
         const totalG = filtrados.reduce((s,g)=>s+parseFloat(g.val),0);
         const totalF = db.fixos.reduce((s,f)=>s+parseFloat(f.val),0);
         const linhas = filtrados.map(g=>`<tr><td>${g.date.split('-').reverse().join('/')}</td><td>${g.desc.toUpperCase()}</td><td>${g.cat}</td><td style="text-align:right;">R$ ${parseFloat(g.val).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('');
