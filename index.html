@@ -483,12 +483,25 @@
 
     // ===== PAGAMENTO =====
     function selectPgto(tipo, btn) {
-        document.querySelectorAll('.pgto-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('gPgto').value = tipo;
-        document.getElementById('extraCredito').classList.toggle('visible', tipo === 'credito');
-        document.getElementById('extraDividido').classList.toggle('visible', tipo === 'dividido');
-        if (tipo === 'dividido') calcDividido();
+        document.querySelectorAll(".pgto-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("gPgto").value = tipo;
+        document.getElementById("extraCredito").classList.toggle("visible", tipo === "credito");
+        document.getElementById("extraDividido").classList.toggle("visible", tipo === "dividido");
+        const gValEl = document.getElementById("gVal");
+        if (tipo === "dividido") {
+            gValEl.disabled = true;
+            gValEl.style.opacity = "0.4";
+            gValEl.style.cursor = "not-allowed";
+            gValEl.placeholder = "calculado automaticamente";
+            calcDividido();
+        } else {
+            gValEl.disabled = false;
+            gValEl.style.opacity = "1";
+            gValEl.style.cursor = "";
+            gValEl.placeholder = "0,00";
+            if (tipo !== "dividido") document.getElementById("dividido-aviso").innerText = "";
+        }
     }
 
     function updateParcelasLabel() {
@@ -523,19 +536,19 @@
     }
 
     function calcDividido() {
-        const totalGeral = getValorNumerico('gVal');
         const v1 = getValorNumerico('gDiv1Val');
         const v2 = getValorNumerico('gDiv2Val');
-        const aviso = document.getElementById('dividido-aviso');
-        if (isNaN(totalGeral) || totalGeral <= 0) { aviso.innerText = ''; return; }
         const soma = (isNaN(v1)?0:v1) + (isNaN(v2)?0:v2);
-        const diff = Math.abs(soma - totalGeral);
-        if (diff < 0.01) {
-            aviso.innerText = '✓ Valores conferem com o total.';
+        // Auto-preenche o campo total
+        const gValEl = document.getElementById('gVal');
+        gValEl.value = soma > 0 ? soma.toFixed(2).replace('.', ',') : '';
+        // Feedback visual
+        const aviso = document.getElementById('dividido-aviso');
+        if (soma > 0) {
+            aviso.innerText = `✓ Total calculado automaticamente: R$ ${soma.toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
             aviso.style.color = 'var(--accent)';
         } else {
-            aviso.innerText = `⚠ Soma R$ ${soma.toLocaleString('pt-BR',{minimumFractionDigits:2})} — faltam/sobram R$ ${(totalGeral - soma).toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-            aviso.style.color = 'var(--warning)';
+            aviso.innerText = '';
         }
     }
 
@@ -573,6 +586,13 @@
         document.getElementById('gPgto').value = pgto.tipo;
         document.getElementById('extraCredito').classList.toggle('visible', pgto.tipo === 'credito');
         document.getElementById('extraDividido').classList.toggle('visible', pgto.tipo === 'dividido');
+        // Habilita/desabilita campo total conforme modo
+        const gValEl = document.getElementById("gVal");
+        if (pgto.tipo === "dividido") {
+            gValEl.disabled = true; gValEl.style.opacity = "0.4"; gValEl.style.cursor = "not-allowed"; gValEl.placeholder = "calculado automaticamente";
+        } else {
+            gValEl.disabled = false; gValEl.style.opacity = "1"; gValEl.style.cursor = ""; gValEl.placeholder = "0,00";
+        }
 
         if (pgto.tipo === 'credito') {
             document.getElementById('gParcelas').value = pgto.parcelas || 1;
@@ -627,7 +647,9 @@
         document.getElementById('monthLabel').innerText = new Intl.DateTimeFormat('pt-BR', {month:'long', year:'numeric'}).format(labelDate);
         
         const catOpts = db.cats.sort().map(c => `<option value="${c}">${c}</option>`).join('');
+        const gCatAtual = document.getElementById('gCat').value;
         document.getElementById('gCat').innerHTML = catOpts;
+        if (gCatAtual) document.getElementById('gCat').value = gCatAtual;
         document.getElementById('fCat').innerHTML = catOpts;
 
         const filtroCatEl = document.getElementById('filtroCat');
